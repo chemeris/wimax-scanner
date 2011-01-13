@@ -1,0 +1,51 @@
+Project, 'coregen', initialised from file
+'D:\Work\Xilinx_Project\WiMAX\ipcore_dir\coregen.cgp'.
+Customizing IP...
+Release 12.2 - Xilinx CORE Generator IP GUI Launcher M.63c (nt)
+Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
+Initializing IP model...
+Finished initialising IP model.
+Finished Customizing.
+Generating IP...
+WARNING:sim:471 - The chosen IP does not support a VHDL behavioral model,
+   generating a VHDL structural model instead.
+WARNING:sim:472 - The chosen IP does not support a Verilog behavioral model,
+   generating a Verilog structural model instead.
+WARNING:sim:89 - A core named <ifft> already exists in the output directory.
+   Output products for this core may be overwritten.
+Initializing IP model...
+Finished initialising IP model.
+XST: HDL Parsing
+XST: HDL Elaboration
+XST: HDL Synthesis
+XST: Advanced HDL Synthesis
+XST: Low Level Synthesis
+XST: Partition Report
+XST: Design Summary
+Generating Implementation files.
+Generating the VHDL wrapper.
+Generating ISE symbol file...
+Generating NGC file.
+Generating VHDL structural model.
+Generating Verilog structural model.
+Finished Generation Stage.
+Generating IP instantiation template...
+Generating the VHDL instantiation template.
+Finished generating IP instantiation template.
+Generating metadata file...
+Finished generating metadata file.
+Generating metadata file...
+Finished generating metadata file.
+Generating ISE file...
+Finished ISE file generation.
+Creating readme './tmp/_cg\ifft_readme.txt'.
+Generating FLIST file...
+Finished FLIST file generation.
+Preparing output directory...
+Finished preparing output directory.
+Launching readme viewer...
+Launched readme viewer.
+Moving files to output directory...
+Finished moving files to output directory
+Saved options for project 'coregen'.
+Wrote file for project 'coregen'.

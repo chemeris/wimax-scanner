@@ -1,0 +1,5 @@
+set -tmpdir "D:/Work/Xilinx_Project/WiMAX/xst/projnav.tmp"
+set -xsthdpdir "D:/Work/Xilinx_Project/WiMAX/xst"
+elaborate
+-ifn top.prj
+-ifmt mixed

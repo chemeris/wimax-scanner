@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spirit:design xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xilinx="http://www.xilinx.com" >
+   <spirit:vendor>xilinx.com</spirit:vendor>
+   <spirit:library>project</spirit:library>
+   <spirit:name>coregen</spirit:name>
+   <spirit:version>1.0</spirit:version>
+   <spirit:componentInstances>
+      <spirit:componentInstance>
+         <spirit:instanceName>ifft</spirit:instanceName>
+         <spirit:displayName></spirit:displayName>
+         <spirit:description></spirit:description>
+         <spirit:componentRef spirit:vendor="xilinx.com" spirit:library="ip" spirit:name="xfft" spirit:version="7.1" />
+         <spirit:configurableElementValues>
+            <spirit:configurableElementValue spirit:referenceId="parameter_scaling_options">scaled</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_butterfly_type">use_luts</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_ce">false</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_run_time_configurable_transform_length">false</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_target_data_throughput">12</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_output_ordering">bit_reversed_order</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_memory_options_reorder">block_ram</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_memory_options_data">block_ram</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_number_of_stages_using_block_ram_for_data_and_phase_factors">0</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_cyclic_prefix_insertion">false</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_ovflo">false</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_rounding_modes">truncation</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_memory_options_phase_factors">block_ram</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_data_format">fixed_point</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_target_clock_frequency">50</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_transform_length">1024</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_implementation_options">automatically_select</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_complex_mult_type">use_mults_resources</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_sclr">false</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_channels">1</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_input_width">16</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_memory_options_hybrid">false</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_phase_factor_width">24</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_input_data_offset">no_offset</spirit:configurableElementValue>
+         </spirit:configurableElementValues>
+         <spirit:vendorExtensions>
+            <xilinx:instanceProperties>
+             <xilinx:projectOptions>
+               <xilinx:projectName>coregen</xilinx:projectName>
+               <xilinx:outputDirectory>./</xilinx:outputDirectory>
+               <xilinx:workingDirectory>./tmp/</xilinx:workingDirectory>
+               <xilinx:subWorkingDirectory>./tmp/_cg</xilinx:subWorkingDirectory>
+             </xilinx:projectOptions>
+             <xilinx:part>
+               <xilinx:device>xc3sd1800a</xilinx:device>
+               <xilinx:deviceFamily>spartan3adsp</xilinx:deviceFamily>
+               <xilinx:package>fg676</xilinx:package>
+               <xilinx:speedGrade>-4</xilinx:speedGrade>
+             </xilinx:part>
+             <xilinx:flowOptions>
+               <xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
+               <xilinx:designEntry>VHDL</xilinx:designEntry>
+               <xilinx:asySymbol>true</xilinx:asySymbol>
+               <xilinx:flowVendor>Foundation_ISE</xilinx:flowVendor>
+               <xilinx:addPads>false</xilinx:addPads>
+               <xilinx:removeRPMs>false</xilinx:removeRPMs>
+               <xilinx:createNDF>false</xilinx:createNDF>
+               <xilinx:implementationFileType>Ngc</xilinx:implementationFileType>
+               <xilinx:formalVerification>false</xilinx:formalVerification>
+             </xilinx:flowOptions>
+             <xilinx:simulationOptions>
+               <xilinx:simulationModel>Behavioral</xilinx:simulationModel>
+               <xilinx:simulationLanguage>VHDL_and_Verilog</xilinx:simulationLanguage>
+               <xilinx:foundationSym>false</xilinx:foundationSym>
+             </xilinx:simulationOptions>
+           </xilinx:instanceProperties>
+            <xilinx:generationHistory>
+               <xilinx:fileSet>
+                  <xilinx:name>customization_generator</xilinx:name>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>ip_xco_generator</xilinx:name>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.xco</xilinx:name>
+                     <xilinx:userFileType>xco</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:03:56 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x5802972A</xilinx:checkSum>
+                  </xilinx:file>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>implementation_netlist_generator</xilinx:name>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.asy</xilinx:name>
+                     <xilinx:userFileType>asy</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:04:03 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0xFBD6B0BB</xilinx:checkSum>
+                  </xilinx:file>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.ngc</xilinx:name>
+                     <xilinx:userFileType>ngc</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:23:21 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0xFD560A3B</xilinx:checkSum>
+                  </xilinx:file>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.sym</xilinx:name>
+                     <xilinx:userFileType>asy</xilinx:userFileType>
+                     <xilinx:userFileType>unknown</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:22:31 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0xE5F1CBA2</xilinx:checkSum>
+                  </xilinx:file>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.v</xilinx:name>
+                     <xilinx:userFileType>verilog</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:23:33 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x3443A239</xilinx:checkSum>
+                  </xilinx:file>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.veo</xilinx:name>
+                     <xilinx:userFileType>veo</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:22:29 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x2A6E57B7</xilinx:checkSum>
+                  </xilinx:file>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.vhd</xilinx:name>
+                     <xilinx:userFileType>vhdl</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:23:28 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0xEFDF8342</xilinx:checkSum>
+                  </xilinx:file>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.vho</xilinx:name>
+                     <xilinx:userFileType>vho</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:22:28 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x76F4C940</xilinx:checkSum>
+                  </xilinx:file>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>instantiation_template_generator</xilinx:name>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.veo</xilinx:name>
+                     <xilinx:userFileType>veo</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:23:38 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x2A6E57B7</xilinx:checkSum>
+                  </xilinx:file>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.vho</xilinx:name>
+                     <xilinx:userFileType>vho</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:23:38 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x76F4C940</xilinx:checkSum>
+                  </xilinx:file>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>xco_generator</xilinx:name>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.xco</xilinx:name>
+                     <xilinx:userFileType>xco</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:23:43 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x18025ECB</xilinx:checkSum>
+                  </xilinx:file>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>xmdf_generator</xilinx:name>
+                  <xilinx:file>
+                     <xilinx:name>./ifft_xmdf.tcl</xilinx:name>
+                     <xilinx:userFileType>tclXmdf</xilinx:userFileType>
+                     <xilinx:userFileType>tcl</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:23:44 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x9FE44E4F</xilinx:checkSum>
+                  </xilinx:file>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>ise_generator</xilinx:name>
+                  <xilinx:file>
+                     <xilinx:name>./_xmsgs/pn_parser.xmsgs</xilinx:name>
+                     <xilinx:userFileType>ignore</xilinx:userFileType>
+                     <xilinx:userFileType>unknown</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:24:19 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x1D62A695</xilinx:checkSum>
+                  </xilinx:file>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.gise</xilinx:name>
+                     <xilinx:userFileType>ignore</xilinx:userFileType>
+                     <xilinx:userFileType>gise</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:24:21 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0xAF84C1CF</xilinx:checkSum>
+                  </xilinx:file>
+                  <xilinx:file>
+                     <xilinx:name>./ifft.xise</xilinx:name>
+                     <xilinx:userFileType>ignore</xilinx:userFileType>
+                     <xilinx:userFileType>xise</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:24:20 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0xFF0EC324</xilinx:checkSum>
+                  </xilinx:file>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>deliver_readme_generator</xilinx:name>
+                  <xilinx:file>
+                     <xilinx:name>./ifft_readme.txt</xilinx:name>
+                     <xilinx:userFileType>ignore</xilinx:userFileType>
+                     <xilinx:userFileType>txtReadme</xilinx:userFileType>
+                     <xilinx:userFileType>txt</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:24:22 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x95448FF4</xilinx:checkSum>
+                  </xilinx:file>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>flist_generator</xilinx:name>
+                  <xilinx:file>
+                     <xilinx:name>./ifft_flist.txt</xilinx:name>
+                     <xilinx:userFileType>ignore</xilinx:userFileType>
+                     <xilinx:userFileType>txtFlist</xilinx:userFileType>
+                     <xilinx:userFileType>txt</xilinx:userFileType>
+                     <xilinx:timeStamp>Wed Jan 12 22:24:23 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0xF7B118DD</xilinx:checkSum>
+                  </xilinx:file>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>view_readme_generator</xilinx:name>
+               </xilinx:fileSet>
+            </xilinx:generationHistory>
+         </spirit:vendorExtensions>
+      </spirit:componentInstance>
+   </spirit:componentInstances>
+   <spirit:description></spirit:description>
+   <spirit:vendorExtensions>
+      <xilinx:instanceProperties xmlns:xilinx="http://www.xilinx.com">
+       <xilinx:projectOptions>
+         <xilinx:projectName>coregen</xilinx:projectName>
+         <xilinx:outputDirectory>./</xilinx:outputDirectory>
+         <xilinx:workingDirectory>./tmp/</xilinx:workingDirectory>
+         <xilinx:subWorkingDirectory>./tmp/_cg</xilinx:subWorkingDirectory>
+       </xilinx:projectOptions>
+       <xilinx:part>
+         <xilinx:device>xc3sd1800a</xilinx:device>
+         <xilinx:deviceFamily>spartan3adsp</xilinx:deviceFamily>
+         <xilinx:package>fg676</xilinx:package>
+         <xilinx:speedGrade>-4</xilinx:speedGrade>
+       </xilinx:part>
+       <xilinx:flowOptions>
+         <xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
+         <xilinx:designEntry>VHDL</xilinx:designEntry>
+         <xilinx:asySymbol>true</xilinx:asySymbol>
+         <xilinx:flowVendor>Foundation_ISE</xilinx:flowVendor>
+         <xilinx:addPads>false</xilinx:addPads>
+         <xilinx:removeRPMs>false</xilinx:removeRPMs>
+         <xilinx:createNDF>false</xilinx:createNDF>
+         <xilinx:implementationFileType>Ngc</xilinx:implementationFileType>
+         <xilinx:formalVerification>false</xilinx:formalVerification>
+       </xilinx:flowOptions>
+       <xilinx:simulationOptions>
+         <xilinx:simulationModel>Behavioral</xilinx:simulationModel>
+         <xilinx:simulationLanguage>VHDL_and_Verilog</xilinx:simulationLanguage>
+         <xilinx:foundationSym>false</xilinx:foundationSym>
+       </xilinx:simulationOptions>
+     </xilinx:instanceProperties>
+   </spirit:vendorExtensions>
+</spirit:design>
