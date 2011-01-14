@@ -67,8 +67,8 @@ ARCHITECTURE behavior OF top_tb IS
 signal char_count: std_logic_vector(31 downto 0) := x"00000000";
 
    -- Clock period definitions
-   constant clk_period : time := 20 ns;
-   constant adc_clk_period : time := 10 ns;
+   constant clk_period : time := 18 ns;
+   constant adc_clk_period : time := 90 ns;
  
 BEGIN
  
@@ -91,6 +91,7 @@ BEGIN
    end process;
  
    adc_clk_process :process
+		
    begin
 		adc_clk <= '0';
 		wait for adc_clk_period/2;
@@ -105,7 +106,7 @@ BEGIN
       -- hold reset state for 100 ns.
       wait for 100 ns;	
 
-      wait for adc_clk_period*10;
+      wait for clk_period*10;
 
       -- insert stimulus here 
 
@@ -119,22 +120,17 @@ BEGIN
         
    begin
         file_open(c_file_handle, "wimax_2647_11.2Msps_16.dat", READ_MODE);
---		  if rising_edge(adc_clk) then
         while not endfile(c_file_handle) loop
 			if NOT (ENDFILE(c_file_handle)) THEN
-            read (c_file_handle, C) ;
-				case(char_count(1 downto 0) ) is
-					when "00" => adc_re(15 downto 8 ) <= conv_std_logic_vector(character'pos(C),8);
-					when "01" => adc_re(7 downto 0 ) <= conv_std_logic_vector(character'pos(C),8);
-					when "10" => adc_im(15 downto 8 ) <= conv_std_logic_vector(character'pos(C),8);
-					when "11" => adc_im(7 downto 0 ) <= conv_std_logic_vector(character'pos(C),8);
-					when others => null;
-				end case;
+			   wait until adc_clk = '1'; 
+            read (c_file_handle, C) ; adc_re(15 downto 8 ) <= conv_std_logic_vector(character'pos(C),8);
+				read (c_file_handle, C) ; adc_re(7 downto 0 ) <= conv_std_logic_vector(character'pos(C),8);
+				read (c_file_handle, C) ; adc_im(15 downto 8 ) <= conv_std_logic_vector(character'pos(C),8);
+				read (c_file_handle, C) ; adc_im(7 downto 0 ) <= conv_std_logic_vector(character'pos(C),8);
             char_count <= char_count + 1;  -- Keep track of the number of
         -- characters
 			end if;
---		end if;
-			wait until adc_clk = '1';
+			wait for 10 ns;
         end loop;
         file_close(c_file_handle);
    end process;

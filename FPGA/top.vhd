@@ -63,9 +63,57 @@ component ifft
 	xk_im: OUT std_logic_VECTOR(15 downto 0));
 end component;
 
+component ifft
+	port (
+	clk: IN std_logic;
+	start: IN std_logic;
+	xn_re: IN std_logic_VECTOR(15 downto 0);
+	xn_im: IN std_logic_VECTOR(15 downto 0);
+	fwd_inv: IN std_logic;
+	fwd_inv_we: IN std_logic;
+	scale_sch: IN std_logic_VECTOR(9 downto 0);
+	scale_sch_we: IN std_logic;
+	rfd: OUT std_logic;
+	xn_index: OUT std_logic_VECTOR(9 downto 0);
+	busy: OUT std_logic;
+	edone: OUT std_logic;
+	done: OUT std_logic;
+	dv: OUT std_logic;
+	xk_index: OUT std_logic_VECTOR(9 downto 0);
+	xk_re: OUT std_logic_VECTOR(15 downto 0);
+	xk_im: OUT std_logic_VECTOR(15 downto 0));
+end component;
+
 signal start, fwd_inv, fwd_inv_we, scale_sch_we, rfd, busy, edone, done, dv  : std_logic;
 signal scale_sch, xn_index, xk_index : std_logic_VECTOR(9 downto 0);
 signal xk_re, xk_im : std_logic_VECTOR(15 downto 0);
+
+type sumbol_buf_type is array (0 to 1151) of std_logic_vector(31 downto 0);
+signal input_buf : sumbol_buf_type;
+signal input_buf_en_a, input_buf_wr, input_buf_en_b : std_logic;
+signal input_buf_adr_wr, input_buf_adr_rd : std_logic_VECTOR(10 downto 0);
+signal data : std_logic_vector(31 downto 0);
+
+signal	crc_en : std_logic;
+signal	rst : std_logic;
+signal	crc_out : std_logic_vector(31 downto 0);
+signal	data_buf : std_logic_vector(7 downto 0);
+signal	calc,	reset, d_valid : std_logic;
+signal	crc_reg : std_logic_vector(31 downto 0);
+signal	crc : std_logic_vector(7 downto 0);
+
+COMPONENT lfsr
+	PORT(
+		d : IN std_logic_vector(7 downto 0);
+		calc : IN std_logic;
+		init : IN std_logic;
+		d_valid : IN std_logic;
+		clk : IN std_logic;
+		reset : IN std_logic;
+		crc_reg : OUT std_logic_vector(31 downto 0);
+		crc : OUT std_logic_vector(7 downto 0)
+		);
+	END COMPONENT;
 
 begin
 
@@ -88,6 +136,17 @@ ifft_instance : ifft
 			xk_index => xk_index,
 			xk_re => xk_re,
 			xk_im => xk_im);
+			
+	Inst_lfsr: lfsr PORT MAP(
+		crc_reg => crc_reg,
+		crc => crc,
+		d => data_buf,
+		calc => crc_en,
+		init => rst,
+		d_valid => d_valid,
+		clk => clk,
+		reset => reset
+	);
 
 fwd_inv_we <= '1';
 fwd_inv <= '0';
@@ -95,9 +154,35 @@ scale_sch <=  "0110001110";
 scale_sch_we <= '1';
 start <= '1';
 
+process (adc_clk)
+begin
+   if rising_edge(adc_clk) then
+      if (input_buf_en_a = '1') then
+         if (input_buf_wr = '1') then
+            input_buf(conv_integer(input_buf_adr_wr)) <= xk_re & xk_im;
+         end if;
+      end if;
+   end if;
+end process;
+
+process (clk)
+begin
+   if rising_edge(clk) then
+      if (input_buf_en_b = '1') then
+         data <= input_buf(conv_integer(input_buf_adr_rd));
+      end if;
+   end if;
+end process;
+
+
 process(clk)
 begin
-  if rising_edge(clk) then
+  if rising_edge(adc_clk) then
+	if(done = '1') then 
+		input_buf_en_a <= '1'; input_buf_wr <= '1';
+	else
+		input_buf_en_a <= '0'; input_buf_wr <= '0';
+	end if;
   end if;
 end process;
 
