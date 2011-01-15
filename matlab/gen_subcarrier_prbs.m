@@ -1,7 +1,27 @@
+% Generate pseudorandom values for 802.16e subcarrier randomization.
+% Copyright (C) 2011  Alexander Chemeris
+%
+% This library is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public
+% License as published by the Free Software Foundation; either
+% version 2.1 of the License, or (at your option) any later version.
+%
+% This library is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+% Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public
+% License along with this library; if not, write to the Free Software
+% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+% USA
+
+% Refer to "8.4.9.4.1 Subcarrier randomization" of IEEE 802.16-2009 for
+% details.
+
 id_cell_bin = double(dec2bin(params.id_cell, 5))-48;
 segment_bin = double(dec2bin(params.segment+1, 2))-48;
 
-% 8.4.9.4.1 Subcarrier randomization
 % This coding is for the first DL zone
 pn = [ id_cell_bin(1) id_cell_bin(2) ... % b0..b1
        id_cell_bin(3) id_cell_bin(4) id_cell_bin(5) ... % b2..b4

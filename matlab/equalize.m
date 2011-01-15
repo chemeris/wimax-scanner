@@ -1,3 +1,21 @@
+% Simple channel equalization using preamble carriers.
+% Copyright (C) 2011  Alexander Chemeris
+%
+% This library is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public
+% License as published by the Free Software Foundation; either
+% version 2.1 of the License, or (at your option) any later version.
+%
+% This library is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+% Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public
+% License along with this library; if not, write to the Free Software
+% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+% USA
+
 %PN_index = 11; %  Preamble Index
 sp_ref = preamble_freq(params.preamble_idx+1,:); % Ideal pilot signal
 X = find(sp_ref ~= 0); % индексы поднесущих пилот-сигнала

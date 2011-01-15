@@ -1,4 +1,31 @@
 function [subcarrier_PUSC_permutation] = gen_PUSC_permutation(DL_PermBase, params)
+% Generate PUSC permutation tables for 802.16e (needs testing!).
+% Copyright (C) 2011  Alexander Chemeris
+%
+% This library is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public
+% License as published by the Free Software Foundation; either
+% version 2.1 of the License, or (at your option) any later version.
+%
+% This library is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+% Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public
+% License along with this library; if not, write to the Free Software
+% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+% USA
+
+% Refer to "8.4.6.1.2.1 Symbol structure for PUSC" of IEEE 802.16-2009 for
+% details. Though it's written in so unclear language that I recommend
+% you to read some textbook on the topic to understand this. I personally
+% used Byeong Gi Lee, Sunghyun Choi "Broadband Wireless Access and Local
+% Networks - Mobile WiMAX and WiFi".
+
+% TODO:: Test and fix calculations if needed.
+%        Look into PUSC-permutation.xls for correct calculations.
+
 % Nsubchannels = 6 (for even-numbered major groups) or 4 (for odd-numbered
 % major groups)
 Nsubch = 6;

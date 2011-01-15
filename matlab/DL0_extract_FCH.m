@@ -1,4 +1,29 @@
-% TODO:: Replace hardcoded values with run-time calculation
+% Extract FCH modulated data from OFDM symbols 0 and 1 of 802.16e
+% Copyright (C) 2011  Alexander Chemeris
+%
+% This library is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public
+% License as published by the Free Software Foundation; either
+% version 2.1 of the License, or (at your option) any later version.
+%
+% This library is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+% Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public
+% License along with this library; if not, write to the Free Software
+% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+% USA
+
+% Refer to "8.4.6.1.2.1 Symbol structure for PUSC" of IEEE 802.16-2009 for
+% details. Though it's written in so unclear language that I recommend
+% you to read some textbook on the topic to understand this. I personally
+% used Byeong Gi Lee, Sunghyun Choi "Broadband Wireless Access and Local
+% Networks - Mobile WiMAX and WiFi".
+
+% TODO:: Fix gen_PUSC_permutation() and use it here.
+%        Look into PUSC-permutation.xls for correct calculations.
 % Rows enumerate physical carrier indexes (starting with 0)
 % of sub-channels 0-3
 % FCH_carriers_sym0 is for symbol 0, FCH_carriers_sym1 is for symbol 1
