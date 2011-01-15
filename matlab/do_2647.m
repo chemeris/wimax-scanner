@@ -10,8 +10,6 @@ read_2647
 search_preamble_corr
 detect_preamble
 equalize
-params.id_cell = 10;
-params.segment = 0;
 gen_subcarrier_prbs
 subcarrier_PUSC_permutation = gen_PUSC_permutation(params.id_cell, params);
 
