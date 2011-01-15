@@ -1,5 +1,5 @@
 %PN_index = 11; %  Preamble Index
-sp_ref = preamble_freq(PN_index,:); % Ideal pilot signal
+sp_ref = preamble_freq(params.preamble_idx+1,:); % Ideal pilot signal
 X = find(sp_ref ~= 0); % индексы поднесущих пилот-сигнала
 sp_ref = sp_ref(sp_ref ~= 0); 
 
