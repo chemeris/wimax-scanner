@@ -26,7 +26,8 @@ read_2647
 
 %% Search for a frame start and process preamble
 search_preamble_corr
-detect_preamble
+[params.preamble_idx params.id_cell params.segment ] = ...
+    detect_preamble(rcvdDL(theta:theta+params.Tb_samples-1), preamble_freq);
 equalize
 gen_subcarrier_prbs
 subcarrier_PUSC_permutation = gen_PUSC_permutation(params.id_cell, params);

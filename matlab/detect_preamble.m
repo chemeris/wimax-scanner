@@ -1,3 +1,4 @@
+function [preamble_idx, id_cell, segment] = detect_preamble(sig_in, preamble_freq)
 % Determine 802.16e preamble index, IDcell and segment.
 % Copyright (C) 2011  Alexander Chemeris
 %
@@ -18,36 +19,34 @@
 
 % Refer to "8.4.6.1.1 Preamble" of IEEE 802.16-2009 for details.
 
-sig_in = rcvdDL(theta:theta+params.Tb_samples-1);
-%sig_in = sig_in * exp(-1i*(2*pi*cfo_fraq));
-
-pr_corr = zeros(size(preamble_time, 1), 1);
-pr_corr_freq = zeros(size(preamble_time, 1), 1);
+%% Detect preamble by correlation in frequency space.
+% Frequency space correlation gives us much better fidelity then
+% time space correlation.
+% TODO:: This could be greatly optimized knowing preambles structure.
+num_preambles = size(preamble_freq, 1);
+pr_corr = zeros(num_preambles, 1);
 sig_in_freq = fft(sig_in);
-for j = 1:size(preamble_time, 1)
-    pr_corr(j) = sum(abs(preamble_time(j,:)'.*sig_in));
-    pr_corr_freq(j) = abs(sum(preamble_freq(j,:)'.*sig_in_freq));
+for j = 1:num_preambles
+    pr_corr(j) = abs(sum(preamble_freq(j,:)'.*sig_in_freq));
 end
 clear i sig_in_freq;
 
-% Find preamble index
-[pr_corr_max PN_index] = max(pr_corr_freq);
-params.preamble_idx = PN_index-1;
-% Find IDcell and segment
-if params.preamble_idx > 95
-    params.id_cell = mod(params.preamble_idx, 32);
-    params.segment = floor(params.preamble_idx/32);
+%% Find preamble index
+[pr_corr_max PN_index] = max(pr_corr);
+preamble_idx = PN_index-1;
+%% Find IDcell and segment
+if preamble_idx < 96
+    id_cell = mod(preamble_idx, 32);
+    segment = floor(preamble_idx/32);
 else
-    params.id_cell = params.preamble_idx-96;
-    params.segment = mod(params.preamble_idx-96, 3);
+    id_cell = preamble_idx-96;
+    segment = mod(preamble_idx-96, 3);
 end
 
-% Plot pr_corr and pr_corr_freq
-figure;
-hold on
-corr_scale = max(pr_corr-mean(pr_corr));
-plot((pr_corr-mean(pr_corr))/corr_scale, 'b-')
-plot((pr_corr_freq-mean(pr_corr_freq))/max(pr_corr_freq-mean(pr_corr_freq)), 'g')
-plot(PN_index, (pr_corr_max-mean(pr_corr))/corr_scale, 'ro')
+%% Optionally plot correlations for all preambles
+if 1
+figure; hold on
+plot(pr_corr, 'g')
+plot(PN_index, pr_corr_max, 'ro')
 hold off
-clear pr_corr_max corr_scale PN_index ;
+end
