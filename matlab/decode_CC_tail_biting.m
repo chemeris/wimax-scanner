@@ -34,13 +34,5 @@ tbLen = length(data)/rateInv;
 % Decode two copies of the received block consecutively and select the
 % outputs from the second copy
 decoded = vitdec([data' ; data'], convCode, tbLen, 'trunc', type);
-%decoded = vitdec([data' ; data'], convCode, tbLen, 'trunc', 'unquant');
-%decoded = vitdec([data' ; data'], convCode, tbLen, 'trunc', 'soft', 1);
-%decoded = vitdec([data' ; data'], convCode, tbLen, 'trunc', 'hard');
 decoded = decoded(tbLen+1:end, 1);
-
-figure ; hold on
-plot(decoded(1:24), 'bo-');
-plot(decoded(25:48), 'r.-');
-hold off
 
