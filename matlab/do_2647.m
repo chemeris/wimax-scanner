@@ -49,33 +49,38 @@ DL0_derand
 DL0_extract_FCH
 %% Demodulate 4 repetitions of FCH into an array of (soft) bits
 FCH_demod_bits_best = FCH_demod(FCH_bits_interleaved_0, FCH_bits_interleaved_1, ...
-                                FCH_bits_interleaved_2,FCH_bits_interleaved_3);
+                                FCH_bits_interleaved_2, FCH_bits_interleaved_3);
 %% De-interleave FCH (soft) bits
 FCH_deinterleaved = deinterleave_QPSK(FCH_demod_bits_best, 16);
 %FCH_deinterleaved = (1-2*encode_CC_tail_biting(rand(96,1)>0.5))'*0.7;
 %FCH_deinterleaved = (1-2*(rand(96,1)>0.5))'*0.7;
 
 %% Decode FCH using CC-1/2 with tail biting
-%FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved, 'unquant');
-FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved<0, 'hard');
-%t_hard = decode_CC_tail_biting(FCH_deinterleaved<0, 'hard');
-% if 0
-% all(FCH_decoded == t_hard)
-% figure ; hold on
-% plot(FCH_decoded, 'bo-');
-% plot(t_hard, 'r.-');
-% hold off; title('FCH_{decoded} and t_{hard}');
-% %spy([ t_hard' ; FCH_decoded' ; xor(t_hard, FCH_decoded)' ])
-% end
+FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved, 'unquant');
+% We can also use hard decision this way:
+%FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved<0, 'hard');
 
+%% Check FCH correctness, estimate BER, print FCH and exit.
+% FCH is repeated twice for FFT sizes >128, so we can check that
+% we decoded it correctly:
+if ~all(decoded(1:24) == decoded(25:48))
+    error('FCH decoding failed!');
+end
+
+% Estimate the number of incorrectly received bits by encoding FCH again
+% and counting the number of different bits.
 recode = encode_CC_tail_biting(FCH_decoded);
-% Count number of "error bits", aka BER
-sum(xor(FCH_deinterleaved<0, recode'))
-figure ; hold on
-plot(FCH_deinterleaved<0, 'bo-');
-plot(recode, 'r.-');
-hold off; title('FCH_{deinterleaved} - original and recoded');
+FCH_errors = sum(xor(FCH_deinterleaved<0, recode'));
+fprintf('Number of error bits in FCH: %d\n', FCH_errors);
+if 0
+    figure ; hold on
+    plot(FCH_deinterleaved<0, 'bo-');
+    plot(recode, 'r.-');
+    hold off; title('FCH_{deinterleaved} - original and recoded');
+end
+clear recode FCH_errors;
 
-%recode2 = encode_CC_tail_biting(decode_CC_tail_biting(recode', 'hard'));
+% Output FCH
+fprintf('FCH: '); fprintf('%1d', FCH_decoded(1:24)); fprintf('\n');
 
-
+% We're done, with FCH, really.
