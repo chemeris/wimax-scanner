@@ -16,10 +16,10 @@
             <spirit:configurableElementValue spirit:referenceId="parameter_ce">false</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_run_time_configurable_transform_length">false</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_target_data_throughput">12</spirit:configurableElementValue>
-            <spirit:configurableElementValue spirit:referenceId="parameter_output_ordering">bit_reversed_order</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_output_ordering">natural_order</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_memory_options_reorder">block_ram</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_memory_options_data">block_ram</spirit:configurableElementValue>
-            <spirit:configurableElementValue spirit:referenceId="parameter_number_of_stages_using_block_ram_for_data_and_phase_factors">0</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_number_of_stages_using_block_ram_for_data_and_phase_factors">3</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_cyclic_prefix_insertion">false</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_ovflo">false</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_rounding_modes">truncation</spirit:configurableElementValue>
@@ -27,7 +27,7 @@
             <spirit:configurableElementValue spirit:referenceId="parameter_data_format">fixed_point</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_target_clock_frequency">50</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_transform_length">1024</spirit:configurableElementValue>
-            <spirit:configurableElementValue spirit:referenceId="parameter_implementation_options">automatically_select</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="parameter_implementation_options">pipelined_streaming_io</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_complex_mult_type">use_mults_resources</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_sclr">false</spirit:configurableElementValue>
             <spirit:configurableElementValue spirit:referenceId="parameter_channels">1</spirit:configurableElementValue>
@@ -76,8 +76,8 @@
                   <xilinx:file>
                      <xilinx:name>./ifft.xco</xilinx:name>
                      <xilinx:userFileType>xco</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:03:56 GMT 2011</xilinx:timeStamp>
-                     <xilinx:checkSum>0x5802972A</xilinx:checkSum>
+                     <xilinx:timeStamp>Sat Jan 15 21:27:51 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0xDAC65EF3</xilinx:checkSum>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
@@ -85,44 +85,44 @@
                   <xilinx:file>
                      <xilinx:name>./ifft.asy</xilinx:name>
                      <xilinx:userFileType>asy</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:04:03 GMT 2011</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jan 15 21:28:01 GMT 2011</xilinx:timeStamp>
                      <xilinx:checkSum>0xFBD6B0BB</xilinx:checkSum>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./ifft.ngc</xilinx:name>
                      <xilinx:userFileType>ngc</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:23:21 GMT 2011</xilinx:timeStamp>
-                     <xilinx:checkSum>0xFD560A3B</xilinx:checkSum>
+                     <xilinx:timeStamp>Sat Jan 15 21:48:51 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x805525F9</xilinx:checkSum>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./ifft.sym</xilinx:name>
                      <xilinx:userFileType>asy</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:22:31 GMT 2011</xilinx:timeStamp>
-                     <xilinx:checkSum>0xE5F1CBA2</xilinx:checkSum>
+                     <xilinx:timeStamp>Sat Jan 15 21:47:46 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0xB5E5D9CC</xilinx:checkSum>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./ifft.v</xilinx:name>
                      <xilinx:userFileType>verilog</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:23:33 GMT 2011</xilinx:timeStamp>
-                     <xilinx:checkSum>0x3443A239</xilinx:checkSum>
+                     <xilinx:timeStamp>Sat Jan 15 21:49:09 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x0637817C</xilinx:checkSum>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./ifft.veo</xilinx:name>
                      <xilinx:userFileType>veo</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:22:29 GMT 2011</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jan 15 21:47:44 GMT 2011</xilinx:timeStamp>
                      <xilinx:checkSum>0x2A6E57B7</xilinx:checkSum>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./ifft.vhd</xilinx:name>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:23:28 GMT 2011</xilinx:timeStamp>
-                     <xilinx:checkSum>0xEFDF8342</xilinx:checkSum>
+                     <xilinx:timeStamp>Sat Jan 15 21:49:01 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x1E431742</xilinx:checkSum>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./ifft.vho</xilinx:name>
                      <xilinx:userFileType>vho</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:22:28 GMT 2011</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jan 15 21:47:44 GMT 2011</xilinx:timeStamp>
                      <xilinx:checkSum>0x76F4C940</xilinx:checkSum>
                   </xilinx:file>
                </xilinx:fileSet>
@@ -131,13 +131,13 @@
                   <xilinx:file>
                      <xilinx:name>./ifft.veo</xilinx:name>
                      <xilinx:userFileType>veo</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:23:38 GMT 2011</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jan 15 21:49:13 GMT 2011</xilinx:timeStamp>
                      <xilinx:checkSum>0x2A6E57B7</xilinx:checkSum>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./ifft.vho</xilinx:name>
                      <xilinx:userFileType>vho</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:23:38 GMT 2011</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jan 15 21:49:13 GMT 2011</xilinx:timeStamp>
                      <xilinx:checkSum>0x76F4C940</xilinx:checkSum>
                   </xilinx:file>
                </xilinx:fileSet>
@@ -146,8 +146,8 @@
                   <xilinx:file>
                      <xilinx:name>./ifft.xco</xilinx:name>
                      <xilinx:userFileType>xco</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:23:43 GMT 2011</xilinx:timeStamp>
-                     <xilinx:checkSum>0x18025ECB</xilinx:checkSum>
+                     <xilinx:timeStamp>Sat Jan 15 21:49:18 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0xAD7B383E</xilinx:checkSum>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
@@ -156,7 +156,7 @@
                      <xilinx:name>./ifft_xmdf.tcl</xilinx:name>
                      <xilinx:userFileType>tclXmdf</xilinx:userFileType>
                      <xilinx:userFileType>tcl</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:23:44 GMT 2011</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jan 15 21:49:20 GMT 2011</xilinx:timeStamp>
                      <xilinx:checkSum>0x9FE44E4F</xilinx:checkSum>
                   </xilinx:file>
                </xilinx:fileSet>
@@ -166,22 +166,22 @@
                      <xilinx:name>./_xmsgs/pn_parser.xmsgs</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:24:19 GMT 2011</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jan 15 21:50:05 GMT 2011</xilinx:timeStamp>
                      <xilinx:checkSum>0x1D62A695</xilinx:checkSum>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./ifft.gise</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>gise</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:24:21 GMT 2011</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jan 15 21:50:07 GMT 2011</xilinx:timeStamp>
                      <xilinx:checkSum>0xAF84C1CF</xilinx:checkSum>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./ifft.xise</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>xise</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:24:20 GMT 2011</xilinx:timeStamp>
-                     <xilinx:checkSum>0xFF0EC324</xilinx:checkSum>
+                     <xilinx:timeStamp>Sat Jan 15 21:50:07 GMT 2011</xilinx:timeStamp>
+                     <xilinx:checkSum>0x141399AB</xilinx:checkSum>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
@@ -191,7 +191,7 @@
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>txtReadme</xilinx:userFileType>
                      <xilinx:userFileType>txt</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:24:22 GMT 2011</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jan 15 21:50:09 GMT 2011</xilinx:timeStamp>
                      <xilinx:checkSum>0x95448FF4</xilinx:checkSum>
                   </xilinx:file>
                </xilinx:fileSet>
@@ -202,7 +202,7 @@
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>txtFlist</xilinx:userFileType>
                      <xilinx:userFileType>txt</xilinx:userFileType>
-                     <xilinx:timeStamp>Wed Jan 12 22:24:23 GMT 2011</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jan 15 21:50:10 GMT 2011</xilinx:timeStamp>
                      <xilinx:checkSum>0xF7B118DD</xilinx:checkSum>
                   </xilinx:file>
                </xilinx:fileSet>

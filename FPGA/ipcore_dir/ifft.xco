@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 12.2
-# Date: Wed Jan 12 22:23:43 2011
+# Date: Sat Jan 15 21:49:18 2011
 #
 ##############################################################
 #
@@ -42,15 +42,15 @@ CSET complex_mult_type=use_mults_resources
 CSET component_name=ifft
 CSET cyclic_prefix_insertion=false
 CSET data_format=fixed_point
-CSET implementation_options=automatically_select
+CSET implementation_options=pipelined_streaming_io
 CSET input_data_offset=no_offset
 CSET input_width=16
 CSET memory_options_data=block_ram
 CSET memory_options_hybrid=false
 CSET memory_options_phase_factors=block_ram
 CSET memory_options_reorder=block_ram
-CSET number_of_stages_using_block_ram_for_data_and_phase_factors=0
-CSET output_ordering=bit_reversed_order
+CSET number_of_stages_using_block_ram_for_data_and_phase_factors=3
+CSET output_ordering=natural_order
 CSET ovflo=false
 CSET phase_factor_width=24
 CSET rounding_modes=truncation
@@ -62,4 +62,4 @@ CSET target_data_throughput=12
 CSET transform_length=1024
 # END Parameters
 GENERATE
-# CRC: dcfffec0
+# CRC: 25a752a6

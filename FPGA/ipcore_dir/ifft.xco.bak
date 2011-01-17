@@ -1,6 +1,15 @@
 ##############################################################
 ##############################################################
 ##############################################################
+SET addpads = false
+SET asysymbol = true
+SET createndf = false
+SET formalverification = false
+SET foundationsym = false
+SET implementationfiletype = Ngc
+SET removerpms = false
+SET simulationfiles = Behavioral
+SET workingdirectory = ./tmp/
 SET designentry = VHDL
 SET BusFormat = BusFormatAngleBracketNotRipped
 SET devicefamily = spartan3adsp
@@ -20,7 +29,7 @@ CSET cyclic_prefix_insertion=false
 CSET data_format=fixed_point
 CSET implementation_options=automatically_select
 CSET input_data_offset=no_offset
-CSET input_width=12
+CSET input_width=16
 CSET memory_options_data=block_ram
 CSET memory_options_hybrid=false
 CSET memory_options_phase_factors=block_ram
