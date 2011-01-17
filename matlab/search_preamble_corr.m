@@ -25,8 +25,9 @@
 %
 % And then improved :)
 
-max_length = 100 * params.Ts_samples ; % Maximum frame time
-sig_in = rcvdDL(1:max_length);
+max_length = params.N_sym * params.Ts_samples ; % Maximum frame time
+frame_delay = max_length*0; % Skip few frames for testing
+sig_in = rcvdDL(1+frame_delay:1+frame_delay+max_length); % Select samples
 
 % Theta is a index of the first sample of the frame
 % max_corr is a value of correlation at the index "theta" (just for debug)
@@ -44,9 +45,11 @@ theta = theta + params.Tg_samples;
 
 % ==== Completely untested part start =====
 % Calculate fractional part of the Carrier Frequency Offset
-cfo_fraq = -angle(corr(theta))/2/pi;
+%cfo_fraq = -angle(corr(theta))/2/pi;
 % Compensate CFO
-rcvdDL = rcvdDL * exp(-1i*(2*pi*cfo_fraq));
+%rcvdDL = rcvdDL * exp(-1i*(2*pi*cfo_fraq));
 % ==== Completely untested part end =====
+
+theta = theta+frame_delay;
 
 clear max_length sig_in max_corr;
