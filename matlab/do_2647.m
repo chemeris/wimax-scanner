@@ -30,12 +30,10 @@ search_preamble_corr
     detect_preamble(rcvdDL(theta:theta+params.Tb_samples-1), preamble_freq);
 equalize
 gen_subcarrier_prbs
-subcarrier_PUSC_permutation = gen_PUSC_permutation(params.id_cell, params);
-
 
 %% Find frame symbols
 search_syms
-for k=1:6%length(sym_start)
+for k=1:2%length(sym_start)
 %    scatterplot(sym_fft(k,:))
 %    figure ; hold on ; plot(abs(fftshift(sym_fft(k,:)))); plot(abs(fftshift(1./err_vec)), 'r'); hold off
     scatterplot(sym_fft_eq(k,:)) ; xlim([-1 1]); ylim([-1 1])
@@ -60,15 +58,19 @@ FCH_deinterleaved = deinterleave_QPSK(FCH_demod_bits_best, 16);
 %% Decode FCH using CC-1/2 with tail biting
 %FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved, 'unquant');
 FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved<0, 'hard');
-t_hard = decode_CC_tail_biting(FCH_deinterleaved<0, 'hard');
-all(FCH_decoded == t_hard)
-figure ; hold on
-plot(FCH_decoded, 'bo-');
-plot(t_hard, 'r.-');
-hold off; title('FCH_{decoded} and t_{hard}');
-%spy([ t_hard' ; FCH_decoded' ; xor(t_hard, FCH_decoded)' ])
+%t_hard = decode_CC_tail_biting(FCH_deinterleaved<0, 'hard');
+% if 0
+% all(FCH_decoded == t_hard)
+% figure ; hold on
+% plot(FCH_decoded, 'bo-');
+% plot(t_hard, 'r.-');
+% hold off; title('FCH_{decoded} and t_{hard}');
+% %spy([ t_hard' ; FCH_decoded' ; xor(t_hard, FCH_decoded)' ])
+% end
 
-recode = encode_CC_tail_biting(t_hard);
+recode = encode_CC_tail_biting(FCH_decoded);
+% Count number of "error bits", aka BER
+sum(xor(FCH_deinterleaved<0, recode'))
 figure ; hold on
 plot(FCH_deinterleaved<0, 'bo-');
 plot(recode, 'r.-');
