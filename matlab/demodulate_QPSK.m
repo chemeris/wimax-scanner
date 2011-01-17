@@ -45,6 +45,9 @@ if 0
     hold off;
 end
 
-% Perform demodulation
-demoded = demodulate(h, constellation);
+% Demodulate
+% Note: I'm not sure why do we need conj() here, but that's the only way
+%       it works.
+demoded = demodulate(h, conj(constellation));
+% Parallel to serial conversion
 demoded = reshape(demoded, 1, length(constellation)*2);
