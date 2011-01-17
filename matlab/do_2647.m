@@ -46,10 +46,10 @@ end
 DL0_derand
 
 %% Extract FCH from OFDM symbols 0 and 1
-DL0_extract_FCH
+FCH_qpsk_symbols = get_slot_data(sym_derand, params.segment*10, ...
+                                 params.FCH_repetitions, 2, params);
 %% Demodulate 4 repetitions of FCH into an array of (soft) bits
-FCH_demod_bits_best = FCH_demod(FCH_bits_interleaved_0, FCH_bits_interleaved_1, ...
-                                FCH_bits_interleaved_2, FCH_bits_interleaved_3);
+FCH_demod_bits_best = FCH_demod(params.FCH_repetitions, FCH_qpsk_symbols);
 %% De-interleave FCH (soft) bits
 FCH_deinterleaved = deinterleave_QPSK(FCH_demod_bits_best, 16);
 
