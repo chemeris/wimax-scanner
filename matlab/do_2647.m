@@ -52,8 +52,6 @@ FCH_demod_bits_best = FCH_demod(FCH_bits_interleaved_0, FCH_bits_interleaved_1, 
                                 FCH_bits_interleaved_2, FCH_bits_interleaved_3);
 %% De-interleave FCH (soft) bits
 FCH_deinterleaved = deinterleave_QPSK(FCH_demod_bits_best, 16);
-%FCH_deinterleaved = (1-2*encode_CC_tail_biting(rand(96,1)>0.5))'*0.7;
-%FCH_deinterleaved = (1-2*(rand(96,1)>0.5))'*0.7;
 
 %% Decode FCH using CC-1/2 with tail biting
 FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved, 'unquant');
@@ -63,7 +61,7 @@ FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved, 'unquant');
 %% Check FCH correctness, estimate BER, print FCH and exit.
 % FCH is repeated twice for FFT sizes >128, so we can check that
 % we decoded it correctly:
-if ~all(decoded(1:24) == decoded(25:48))
+if ~all(FCH_decoded(1:24) == FCH_decoded(25:48))
     error('FCH decoding failed!');
 end
 
@@ -83,4 +81,4 @@ clear recode FCH_errors;
 % Output FCH
 fprintf('FCH: '); fprintf('%1d', FCH_decoded(1:24)); fprintf('\n');
 
-% We're done, with FCH, really.
+% We're done with FCH, really.
