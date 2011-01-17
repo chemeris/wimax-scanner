@@ -36,5 +36,5 @@ rx_sym = sig_in .* err_vec;
  
 %% Do plots
 figure; hold on ; plot(abs(fftshift(sig_in))); plot(abs(fftshift(1./err_vec)), 'r'); hold off
-figure; plot(abs(fftshift(rx_sym)));
+%figure; plot(abs(fftshift(rx_sym)));
 %scatterplot(rx_sym);
