@@ -62,18 +62,18 @@ all(t==interleaved_bits)
 clear t ;
 
 %% Decode (CC 1/2 with tail-biting)
+% Using hard bits
 t = decode_CC_tail_biting(conv_encoded_bits', 'hard');
 all(t==randomized_bits)
 clear t ;
 
-%% Encode (CC 1/2 with tail-biting)
 % Using unquiantized soft bits
 conv_encoded_bits_soft = double(1 - 2*conv_encoded_bits)*0.7;
 t = decode_CC_tail_biting(conv_encoded_bits_soft', 'unquant');
 all(t==randomized_bits)
 clear t ;
 
-% Using hard bits
+%% Encode (CC 1/2 with tail-biting)
 t = encode_CC_tail_biting(randomized_bits);
 all(t==conv_encoded_bits)
 clear t ;
