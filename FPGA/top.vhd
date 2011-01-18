@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------------
--- Searching first symbol of preamble for 802.16e.
--- Copyright (C) 2011 Andrew Karpenkov
+-- Searching preamble symbol for 802.16e.
+-- Copyright (C) 2011  Andrew Karpenkov
 --
 -- This library is free software; you can redistribute it and/or
 -- modify it under the terms of the GNU Lesser General Public
@@ -9,7 +9,7 @@
 --
 -- This library is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
--- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 -- Lesser General Public License for more details.
 --
 -- You should have received a copy of the GNU Lesser General Public
@@ -17,6 +17,7 @@
 -- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 -- USA
 ----------------------------------------------------------------------------------
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
@@ -34,6 +35,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity top is
 Port 	 ( clk : in  STD_LOGIC;
 			adc_clk : in STD_LOGIC;
+			rst: IN std_logic;
 			adc_re : in  STD_LOGIC_VECTOR (15 downto 0);
 			adc_im : in  STD_LOGIC_VECTOR (15 downto 0);
          data : out  STD_LOGIC_VECTOR (7 downto 0)
@@ -78,7 +80,7 @@ type re_im_mux_type is array (0 to 25) of std_logic_vector(15 downto 0);
 type out_mux_type is array (0 to 25) of std_logic_vector(31 downto 0);
 signal re_mux_a, re_mux_b, im_mux_a, im_mux_b  : re_im_mux_type;
 signal out_mux_re, out_mux_im  : out_mux_type;
-signal sum_re, sum_im, sum_re_d, sum_im_d : std_logic_vector(36 downto 0);
+signal sum_re, sum_im, sum_re_buf, sum_im_buf  : std_logic_vector(36 downto 0);
 signal conveyer : integer range 0 to 5;
 --signal	crc_en : std_logic;
 --signal	rst : std_logic;
@@ -144,20 +146,24 @@ find_symbol <= '1';
 process (adc_clk)
 begin
    if rising_edge(adc_clk) then
+	if(rst = '0') then
       if (in_buf_freq_en_a = '1') then
          if (in_buf_freq_wr = '1') then
             in_buf_freq(conv_integer(in_buf_freq_adr_wr)) <= xk_re & xk_im;
          end if;
       end if;
+	end if;
    end if;
 end process;
 
 process (clk)
 begin
    if rising_edge(clk) then
+	if(rst = '0') then
       if (in_buf_freq_en_b = '1') then
          data_fft <= in_buf_freq(conv_integer(in_buf_freq_adr_rd));
       end if;
+	end if;
    end if;
 end process;
 
@@ -165,11 +171,15 @@ end process;
 process(adc_clk)
 begin
   if rising_edge(adc_clk) then
-	
-	in_buf_t(1151) <= adc_re & adc_im;
-	for i in 1 to 1151 loop
-		in_buf_t(i-1)<=in_buf_t(i);
-	end loop;
+	if(rst = '1') then
+		for i in 0 to 1151 loop
+			in_buf_t(i)<=(others => '0');
+		end loop;
+	else
+		in_buf_t(1151) <= adc_re & adc_im;
+		for i in 1 to 1151 loop
+			in_buf_t(i-1)<=in_buf_t(i);
+		end loop;
 		
 --	in_buf_t(conv_integer(count)) <= adc_re & adc_im;
 --	if (conv_integer(count) < 1151) then
@@ -183,7 +193,7 @@ begin
 --	else
 --		in_buf_freq_en_a <= '0'; in_buf_freq_wr <= '0';
 --	end if;
-
+  end if;
   end if;
 end process;
 
@@ -198,7 +208,16 @@ end process;
 process(clk)
 begin
   if rising_edge(clk) then
-  
+  if(rst = '1') then
+		for i in 0 to 25 loop
+			re_mux_a(i)<=(others => '0');
+			re_mux_b(i)<=(others => '0');
+			im_mux_a(i)<=(others => '0');
+			im_mux_b(i)<=(others => '0');
+		end loop;
+		sum_re_buf <= (others => '0');
+		sum_im_buf <= (others => '0');
+  else
 	if(find_symbol='1') then
 	case conveyer is
 		when 0 => conveyer <= conveyer + 1;
@@ -242,24 +261,30 @@ begin
 						im_mux_a(i)<=in_buf_t(i+4*26)(15 downto 0);
 						im_mux_b(i)<=in_buf_t(1151-i-4*26)(15 downto 0);
 					end loop;
-					re_mux_a(24)<=(others => '0'); re_mux_b(24)<=(others => '0');
-					im_mux_a(24)<=(others => '0'); im_mux_b(24)<=(others => '0');
-					re_mux_a(25)<=(others => '0'); re_mux_b(25)<=(others => '0');
-					im_mux_a(25)<=(others => '0'); im_mux_b(25)<=(others => '0');
-					
 					conveyer <= 0;
 		when others => null;
 	end case;
-	if(conveyer = 2) then
-		sum_re <= (others =>'0'); sum_im <= (others =>'0');
-		sum_re_d <= sum_re; sum_im_d <= sum_im;
-	else
-		sum_re <= sum_re + out_mux_re(0)+out_mux_re(1)+out_mux_re(2)+out_mux_re(3)+out_mux_re(4)+out_mux_re(5)+
+	if(conveyer = 1) then
+		sum_re <= sum_re_buf;
+		sum_im <= sum_im_buf;
+		
+		sum_re_buf <= out_mux_re(0)+out_mux_re(1)+out_mux_re(2)+out_mux_re(3)+out_mux_re(4)+out_mux_re(5)+
 				out_mux_re(6)+out_mux_re(7)+out_mux_re(8)+out_mux_re(9)+
 				out_mux_re(10)+out_mux_re(11)+out_mux_re(12)+out_mux_re(13)+out_mux_re(14)+out_mux_re(15)+
 				out_mux_re(16)+out_mux_re(17)+out_mux_re(18)+out_mux_re(19)+
 				out_mux_re(20)+out_mux_re(21)+out_mux_re(22)+out_mux_re(23)+out_mux_re(24)+out_mux_re(25);
-		sum_im <=sum_im + out_mux_im(0)+out_mux_im(1)+out_mux_im(2)+out_mux_im(3)+out_mux_im(4)+out_mux_im(5)+
+		sum_im_buf <= out_mux_im(0)+out_mux_im(1)+out_mux_im(2)+out_mux_im(3)+out_mux_im(4)+out_mux_im(5)+
+				out_mux_im(6)+out_mux_im(7)+out_mux_im(8)+out_mux_im(9)+
+				out_mux_im(10)+out_mux_im(11)+out_mux_im(12)+out_mux_im(13)+out_mux_im(14)+out_mux_im(15)+
+				out_mux_im(16)+out_mux_im(17)+out_mux_im(18)+out_mux_im(19)+
+				out_mux_im(20)+out_mux_im(21)+out_mux_im(22)+out_mux_im(23)+out_mux_im(24)+out_mux_im(25);
+	else
+		sum_re_buf <= sum_re_buf + out_mux_re(0)+out_mux_re(1)+out_mux_re(2)+out_mux_re(3)+out_mux_re(4)+out_mux_re(5)+
+				out_mux_re(6)+out_mux_re(7)+out_mux_re(8)+out_mux_re(9)+
+				out_mux_re(10)+out_mux_re(11)+out_mux_re(12)+out_mux_re(13)+out_mux_re(14)+out_mux_re(15)+
+				out_mux_re(16)+out_mux_re(17)+out_mux_re(18)+out_mux_re(19)+
+				out_mux_re(20)+out_mux_re(21)+out_mux_re(22)+out_mux_re(23)+out_mux_re(24)+out_mux_re(25);
+		sum_im_buf <=sum_im_buf + out_mux_im(0)+out_mux_im(1)+out_mux_im(2)+out_mux_im(3)+out_mux_im(4)+out_mux_im(5)+
 				out_mux_im(6)+out_mux_im(7)+out_mux_im(8)+out_mux_im(9)+
 				out_mux_im(10)+out_mux_im(11)+out_mux_im(12)+out_mux_im(13)+out_mux_im(14)+out_mux_im(15)+
 				out_mux_im(16)+out_mux_im(17)+out_mux_im(18)+out_mux_im(19)+
@@ -273,7 +298,7 @@ begin
 --			im_mux_b(i)<=in_buf_t(conv_integer(count))(15 downto 0);
 --		end loop;
 	end if;
-	  
+  end if;  
   end if;
 end process;
 

@@ -1,21 +1,22 @@
-----------------------------------------------------------------------------------
--- Testbanch of module that searching first symbol of preamble for 802.16e.
--- Copyright (C) 2011 Andrew Karpenkov
+--------------------------------------------------------------------------------
+-- Company: 
+-- Engineer:
 --
--- This library is free software; you can redistribute it and/or
--- modify it under the terms of the GNU Lesser General Public
--- License as published by the Free Software Foundation; either
--- version 2.1 of the License, or (at your option) any later version.
---
--- This library is distributed in the hope that it will be useful,
--- but WITHOUT ANY WARRANTY; without even the implied warranty of
--- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
--- Lesser General Public License for more details.
---
--- You should have received a copy of the GNU Lesser General Public
--- License along with this library; if not, write to the Free Software
--- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
--- USA
+-- Create Date:   23:57:45 01/12/2011
+-- Design Name:   
+-- Module Name:   D:/Work/Xilinx_Project/WiMAX/top_tb.vhd
+-- Project Name:  WiMAX
+-- Target Device:  
+-- Tool versions:  
+-- Description:   
+-- 
+-- VHDL Test Bench Created by ISE for module: top
+-- 
+-- Dependencies:
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
 --
 -- Notes: 
 -- This testbench has been automatically generated using types std_logic and
@@ -46,6 +47,7 @@ ARCHITECTURE behavior OF top_tb IS
     PORT(
          clk : IN  std_logic;
          adc_clk : in  std_logic;
+			rst: IN std_logic;
          adc_re : IN  std_logic_vector(15 downto 0);
          adc_im : IN  std_logic_vector(15 downto 0);
          data : OUT  std_logic_vector(7 downto 0)
@@ -55,6 +57,7 @@ ARCHITECTURE behavior OF top_tb IS
 
    --Inputs
    signal clk : std_logic := '0';
+	signal rst : std_logic := '0';
    signal adc_re : std_logic_vector(15 downto 0) := (others => '0');
    signal adc_im : std_logic_vector(15 downto 0) := (others => '0');
 
@@ -74,6 +77,7 @@ BEGIN
 	-- Instantiate the Unit Under Test (UUT)
    uut: top PORT MAP (
           clk => clk,
+			 rst => rst,
           adc_clk => adc_clk,
           adc_re => adc_re,
           adc_im => adc_im,
@@ -103,10 +107,11 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
+		rst <= '1';
       wait for 100 ns;	
 
-      wait for clk_period*10;
-
+      wait for clk_period*11;
+		rst <= '0';
       -- insert stimulus here 
 
       wait;
@@ -121,13 +126,15 @@ BEGIN
         file_open(c_file_handle, "wimax_2647_11.2Msps_16.dat", READ_MODE);
         while not endfile(c_file_handle) loop
 			if NOT (ENDFILE(c_file_handle)) THEN
-			   wait until adc_clk = '1'; 
-            read (c_file_handle, C) ; adc_re(15 downto 8 ) <= conv_std_logic_vector(character'pos(C),8);
-				read (c_file_handle, C) ; adc_re(7 downto 0 ) <= conv_std_logic_vector(character'pos(C),8);
-				read (c_file_handle, C) ; adc_im(15 downto 8 ) <= conv_std_logic_vector(character'pos(C),8);
-				read (c_file_handle, C) ; adc_im(7 downto 0 ) <= conv_std_logic_vector(character'pos(C),8);
-            char_count <= char_count + 1;  -- Keep track of the number of
-        -- characters
+			  
+			   wait until adc_clk = '1';
+				if (rst = '0') then
+					read (c_file_handle, C) ; adc_re(15 downto 8 ) <= conv_std_logic_vector(character'pos(C),8);
+					read (c_file_handle, C) ; adc_re(7 downto 0 ) <= conv_std_logic_vector(character'pos(C),8);
+					read (c_file_handle, C) ; adc_im(15 downto 8 ) <= conv_std_logic_vector(character'pos(C),8);
+					read (c_file_handle, C) ; adc_im(7 downto 0 ) <= conv_std_logic_vector(character'pos(C),8);
+					char_count <= char_count + 1;  -- Keep track of the number of characters
+				end if;
 			end if;
 			wait for 10 ns;
         end loop;
