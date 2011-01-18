@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
--- Searching preamble symbol for 802.16e.
+-- Searching first symbol of preamble for 802.16e.
 -- Copyright (C) 2011  Andrew Karpenkov
 --
 -- This library is free software; you can redistribute it and/or
@@ -47,6 +47,7 @@ architecture Behavioral of top is
 component ifft
 	port (
 	clk: IN std_logic;
+	ce: IN std_logic;
 	start: IN std_logic;
 	xn_re: IN std_logic_VECTOR(15 downto 0);
 	xn_im: IN std_logic_VECTOR(15 downto 0);
@@ -65,9 +66,11 @@ component ifft
 	xk_im: OUT std_logic_VECTOR(15 downto 0));
 end component;
 
+signal count_point, point_re_max, point_im_max  : std_logic_VECTOR(15 downto 0):=x"0000";
 signal start, fwd_inv, fwd_inv_we, scale_sch_we, rfd, busy, edone, done, dv  : std_logic;
 signal scale_sch, xn_index, xk_index : std_logic_VECTOR(9 downto 0);
 signal xk_re, xk_im : std_logic_VECTOR(15 downto 0);
+signal ce: std_logic;
 
 type sumbol_buf_type is array (0 to 1151) of std_logic_vector(31 downto 0);
 signal in_buf_t, in_buf_freq  : sumbol_buf_type;
@@ -80,8 +83,9 @@ type re_im_mux_type is array (0 to 25) of std_logic_vector(15 downto 0);
 type out_mux_type is array (0 to 25) of std_logic_vector(31 downto 0);
 signal re_mux_a, re_mux_b, im_mux_a, im_mux_b  : re_im_mux_type;
 signal out_mux_re, out_mux_im  : out_mux_type;
-signal sum_re, sum_im, sum_re_buf, sum_im_buf  : std_logic_vector(36 downto 0);
+signal sum_re, sum_im, sum_re_buf, sum_im_buf, sum_re_max, sum_im_max   : std_logic_vector(36 downto 0);
 signal conveyer : integer range 0 to 5;
+
 --signal	crc_en : std_logic;
 --signal	rst : std_logic;
 --signal	crc_out : std_logic_vector(31 downto 0);
@@ -108,6 +112,7 @@ begin
 ifft_instance : ifft
 		port map (
 			clk => adc_clk,
+			ce => ce,
 			start => start,
 			xn_re => adc_re,
 			xn_im => adc_im,
@@ -142,6 +147,7 @@ scale_sch <=  "0110001110";
 scale_sch_we <= '1';
 start <= '1';
 find_symbol <= '1';
+ce <= not(rst);
 
 process (adc_clk)
 begin
@@ -176,6 +182,12 @@ begin
 			in_buf_t(i)<=(others => '0');
 		end loop;
 	else
+		if (conv_integer(count_point) < 55999) then
+			count_point <= count_point + 1;
+		else
+			count_point <= (others => '0');
+		end if;
+		
 		in_buf_t(1151) <= adc_re & adc_im;
 		for i in 1 to 1151 loop
 			in_buf_t(i-1)<=in_buf_t(i);
@@ -261,6 +273,11 @@ begin
 						im_mux_a(i)<=in_buf_t(i+4*26)(15 downto 0);
 						im_mux_b(i)<=in_buf_t(1151-i-4*26)(15 downto 0);
 					end loop;
+					re_mux_a(24)<=(others => '0'); re_mux_b(24)<=(others => '0');
+					im_mux_a(24)<=(others => '0'); im_mux_b(24)<=(others => '0');
+					re_mux_a(25)<=(others => '0'); re_mux_b(25)<=(others => '0');
+					im_mux_a(25)<=(others => '0'); im_mux_b(25)<=(others => '0');
+
 					conveyer <= 0;
 		when others => null;
 	end case;
@@ -290,16 +307,33 @@ begin
 				out_mux_im(16)+out_mux_im(17)+out_mux_im(18)+out_mux_im(19)+
 				out_mux_im(20)+out_mux_im(21)+out_mux_im(22)+out_mux_im(23)+out_mux_im(24)+out_mux_im(25);
 	end if;
---		for i in 0 to 25 loop
---			re_mux_a(i)<=in_buf_t(conv_integer(count))(31 downto 16);
---			re_mux_b(i)<=in_buf_t(conv_integer(count))(31 downto 16);
---		
---			im_mux_a(i)<=in_buf_t(conv_integer(count))(15 downto 0);
---			im_mux_b(i)<=in_buf_t(conv_integer(count))(15 downto 0);
---		end loop;
 	end if;
   end if;  
   end if;
+end process;
+
+process(clk)
+begin
+  if rising_edge(clk) then
+	if(rst = '1') then
+		sum_re_max <= (others => '0');
+		sum_im_max <= (others => '0');
+	else
+		if(find_symbol='1' and conveyer = 2) then
+		 if (conv_integer(count_point) = 0) then sum_re_max <= (others => '0'); sum_im_max <= (others => '0');
+		 else
+				if(sum_re_max < sum_re) then
+					sum_re_max <= sum_re;
+					point_re_max <= count_point;
+				end if;
+				if(sum_im_max < sum_im) then
+					sum_im_max <= sum_im;
+					point_im_max <= count_point;
+				end if;
+		 end if;
+		end if;
+  end if;  
+ end if;
 end process;
 
 end Behavioral;

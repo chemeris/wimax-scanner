@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="D:/Work/Xilinx_Project/WiMAX/top_tb_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_arith" />
+            <top_module name="std_logic_signed" />
+            <top_module name="std_logic_textio" />
+            <top_module name="std_logic_unsigned" />
+            <top_module name="textio" />
+            <top_module name="top_tb" />
+            <top_module name="vcomponents" />
+            <top_module name="vital_primitives" />
+            <top_module name="vital_timing" />
+            <top_module name="vpkg" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="22" />
+   <wvobject fp_name="/top_tb/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/rst" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/adc_re" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">adc_re[15:0]</obj_property>
+      <obj_property name="ObjectShortName">adc_re[15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/adc_im" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">adc_im[15:0]</obj_property>
+      <obj_property name="ObjectShortName">adc_im[15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/adc_clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">adc_clk</obj_property>
+      <obj_property name="ObjectShortName">adc_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/data" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">data[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/char_count" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">char_count[31:0]</obj_property>
+      <obj_property name="ObjectShortName">char_count[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/clk_period" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">clk_period</obj_property>
+      <obj_property name="ObjectShortName">clk_period</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/adc_clk_period" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">adc_clk_period</obj_property>
+      <obj_property name="ObjectShortName">adc_clk_period</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/ce" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ce</obj_property>
+      <obj_property name="ObjectShortName">ce</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/xn_index" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">xn_index[9:0]</obj_property>
+      <obj_property name="ObjectShortName">xn_index[9:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/xk_index" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">xk_index[9:0]</obj_property>
+      <obj_property name="ObjectShortName">xk_index[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/xk_re" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">xk_re[15:0]</obj_property>
+      <obj_property name="ObjectShortName">xk_re[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/xk_im" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">xk_im[15:0]</obj_property>
+      <obj_property name="ObjectShortName">xk_im[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/count_point" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">count_point[15:0]</obj_property>
+      <obj_property name="ObjectShortName">count_point[15:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/conveyer" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">conveyer</obj_property>
+      <obj_property name="ObjectShortName">conveyer</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/sum_re" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sum_re[36:0]</obj_property>
+      <obj_property name="ObjectShortName">sum_re[36:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/sum_im" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sum_im[36:0]</obj_property>
+      <obj_property name="ObjectShortName">sum_im[36:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/sum_re_max" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sum_re_max[36:0]</obj_property>
+      <obj_property name="ObjectShortName">sum_re_max[36:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/sum_im_max" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sum_im_max[36:0]</obj_property>
+      <obj_property name="ObjectShortName">sum_im_max[36:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/point_re_max" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">point_re_max[15:0]</obj_property>
+      <obj_property name="ObjectShortName">point_re_max[15:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/top_tb/uut/point_im_max" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">point_im_max[15:0]</obj_property>
+      <obj_property name="ObjectShortName">point_im_max[15:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+</wave_config>
