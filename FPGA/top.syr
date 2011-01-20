@@ -1,0 +1,511 @@
+Release 12.2 - xst M.63c (nt)
+Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
+--> Parameter TMPDIR set to xst/projnav.tmp
+
+
+Total REAL time to Xst completion: 0.00 secs
+Total CPU time to Xst completion: 0.79 secs
+ 
+--> Parameter xsthdpdir set to xst
+
+
+Total REAL time to Xst completion: 0.00 secs
+Total CPU time to Xst completion: 0.80 secs
+ 
+--> Reading design: top.prj
+
+TABLE OF CONTENTS
+  1) Synthesis Options Summary
+  2) HDL Compilation
+  3) Design Hierarchy Analysis
+  4) HDL Analysis
+  5) HDL Synthesis
+     5.1) HDL Synthesis Report
+  6) Advanced HDL Synthesis
+     6.1) Advanced HDL Synthesis Report
+  7) Low Level Synthesis
+  8) Partition Report
+  9) Final Report
+	9.1) Device utilization summary
+	9.2) Partition Resource Summary
+	9.3) TIMING REPORT
+
+
+=========================================================================
+*                      Synthesis Options Summary                        *
+=========================================================================
+---- Source Parameters
+Input File Name                    : "top.prj"
+Input Format                       : mixed
+Ignore Synthesis Constraint File   : NO
+
+---- Target Parameters
+Output File Name                   : "top"
+Output Format                      : NGC
+Target Device                      : xc3sd1800a-4-fg676
+
+---- Source Options
+Top Module Name                    : top
+Automatic FSM Extraction           : YES
+FSM Encoding Algorithm             : Auto
+Safe Implementation                : No
+FSM Style                          : LUT
+RAM Extraction                     : Yes
+RAM Style                          : Auto
+ROM Extraction                     : Yes
+Mux Style                          : Auto
+Decoder Extraction                 : YES
+Priority Encoder Extraction        : Yes
+Shift Register Extraction          : YES
+Logical Shifter Extraction         : YES
+XOR Collapsing                     : YES
+ROM Style                          : Auto
+Mux Extraction                     : Yes
+Resource Sharing                   : YES
+Asynchronous To Synchronous        : NO
+Use DSP Block                      : Auto
+Automatic Register Balancing       : No
+
+---- Target Options
+Add IO Buffers                     : YES
+Global Maximum Fanout              : 500
+Add Generic Clock Buffer(BUFG)     : 24
+Register Duplication               : YES
+Slice Packing                      : YES
+Optimize Instantiated Primitives   : NO
+Use Clock Enable                   : Yes
+Use Synchronous Set                : Yes
+Use Synchronous Reset              : Yes
+Pack IO Registers into IOBs        : Auto
+Equivalent register Removal        : YES
+
+---- General Options
+Optimization Goal                  : Speed
+Optimization Effort                : 1
+Keep Hierarchy                     : No
+Netlist Hierarchy                  : As_Optimized
+RTL Output                         : Yes
+Global Optimization                : AllClockNets
+Read Cores                         : YES
+Write Timing Constraints           : NO
+Cross Clock Analysis               : NO
+Hierarchy Separator                : /
+Bus Delimiter                      : <>
+Case Specifier                     : Maintain
+Slice Utilization Ratio            : 100
+BRAM Utilization Ratio             : 100
+DSP48 Utilization Ratio            : 100
+Verilog 2001                       : YES
+Auto BRAM Packing                  : NO
+Slice Utilization Ratio Delta      : 5
+
+---- Other Options
+Cores Search Directories           : {"ipcore_dir"  }
+
+=========================================================================
+
+
+=========================================================================
+*                          HDL Compilation                              *
+=========================================================================
+WARNING:HDLParsers:3498 - No primary, secondary unit in the file "D:/Work/Xilinx_Project/WiMAX/ipcore_dir/ifft.vhd. Ignore this file from project file "D:/Work/Xilinx_Project/WiMAX/top_vhdl.prj".
+Compiling vhdl file "D:/Work/Xilinx_Project/WiMAX/top.vhd" in Library work.
+Entity <top> compiled.
+Entity <top> (Architecture <behavioral>) compiled.
+
+=========================================================================
+*                     Design Hierarchy Analysis                         *
+=========================================================================
+Analyzing hierarchy for entity <top> in library <work> (architecture <behavioral>).
+
+
+=========================================================================
+*                            HDL Analysis                               *
+=========================================================================
+Analyzing Entity <top> in library <work> (Architecture <behavioral>).
+WARNING:Xst:2211 - "D:/Work/Xilinx_Project/WiMAX/top.vhd" line 106: Instantiating black box module <ifft>.
+WARNING:Xst:790 - "D:/Work/Xilinx_Project/WiMAX/top.vhd" line 149: Index value(s) does not match array range, simulation mismatch.
+WARNING:Xst:790 - "D:/Work/Xilinx_Project/WiMAX/top.vhd" line 159: Index value(s) does not match array range, simulation mismatch.
+Entity <top> analyzed. Unit <top> generated.
+
+
+=========================================================================
+*                           HDL Synthesis                               *
+=========================================================================
+
+Performing bidirectional port resolution...
+
+Synthesizing Unit <top>.
+    Related source file is "D:/Work/Xilinx_Project/WiMAX/top.vhd".
+WARNING:Xst:1306 - Output <data> is never assigned.
+WARNING:Xst:646 - Signal <xn_index> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <xk_index> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <rfd> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:653 - Signal <in_buf_freq_wr> is used but never assigned. This sourceless signal will be automatically connected to value 0.
+WARNING:Xst:653 - Signal <in_buf_freq_en_b> is used but never assigned. This sourceless signal will be automatically connected to value 0.
+WARNING:Xst:653 - Signal <in_buf_freq_en_a> is used but never assigned. This sourceless signal will be automatically connected to value 0.
+WARNING:Xst:653 - Signal <in_buf_freq_adr_wr> is used but never assigned. This sourceless signal will be automatically connected to value 00000000000.
+WARNING:Xst:653 - Signal <in_buf_freq_adr_rd> is used but never assigned. This sourceless signal will be automatically connected to value 00000000000.
+WARNING:Xst:646 - Signal <edone> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <dv> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <done> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <data_fft> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:1780 - Signal <count> is never used or assigned. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <busy> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+    Found finite state machine <FSM_0> for signal <conveyer>.
+    -----------------------------------------------------------------------
+    | States             | 5                                              |
+    | Transitions        | 5                                              |
+    | Inputs             | 0                                              |
+    | Outputs            | 5                                              |
+    | Clock              | clk                       (rising_edge)        |
+    | Power Up State     | 000                                            |
+    | Encoding           | automatic                                      |
+    | Implementation     | LUT                                            |
+    -----------------------------------------------------------------------
+    Using one-hot encoding for signal <in_buf_freq_adr_wr>.
+    Found 416-bit register for signal <im_mux_a>.
+    Found 416-bit register for signal <im_mux_b>.
+    Found 36864-bit register for signal <in_buf_freq>.
+    Found 36864-bit register for signal <in_buf_t>.
+    Found 16x16-bit multiplier for signal <out_mux_im>.
+    Found 16x16-bit multiplier for signal <out_mux_re>.
+    Found 416-bit register for signal <re_mux_a>.
+    Found 416-bit register for signal <re_mux_b>.
+    Found 37-bit register for signal <sum_im>.
+    Found 37-bit adder for signal <sum_im$add0000> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0000> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0001> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0002> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0003> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0004> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0005> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0006> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0007> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0008> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0009> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0010> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0011> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0012> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0013> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0014> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0015> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0016> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0017> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0018> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0019> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0020> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0021> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0022> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0023> created at line 256.
+    Found 37-bit adder for signal <sum_im$addsub0024> created at line 256.
+    Found 37-bit register for signal <sum_re>.
+    Found 37-bit adder for signal <sum_re$add0000> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0000> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0001> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0002> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0003> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0004> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0005> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0006> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0007> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0008> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0009> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0010> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0011> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0012> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0013> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0014> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0015> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0016> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0017> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0018> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0019> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0020> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0021> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0022> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0023> created at line 251.
+    Found 37-bit adder for signal <sum_re$addsub0024> created at line 251.
+INFO:Xst:738 - HDL ADVISOR - 416 flip-flops were inferred for signal <im_mux_a>. You may be trying to describe a RAM in a way that is incompatible with block and distributed RAM resources available on Xilinx devices, or with a specific template that is not supported. Please review the Xilinx resources documentation and the XST user manual for coding guidelines. Taking advantage of RAM resources will lead to improved device usage and reduced synthesis time.
+INFO:Xst:738 - HDL ADVISOR - 416 flip-flops were inferred for signal <im_mux_b>. You may be trying to describe a RAM in a way that is incompatible with block and distributed RAM resources available on Xilinx devices, or with a specific template that is not supported. Please review the Xilinx resources documentation and the XST user manual for coding guidelines. Taking advantage of RAM resources will lead to improved device usage and reduced synthesis time.
+INFO:Xst:738 - HDL ADVISOR - 36864 flip-flops were inferred for signal <in_buf_freq>. You may be trying to describe a RAM in a way that is incompatible with block and distributed RAM resources available on Xilinx devices, or with a specific template that is not supported. Please review the Xilinx resources documentation and the XST user manual for coding guidelines. Taking advantage of RAM resources will lead to improved device usage and reduced synthesis time.
+INFO:Xst:738 - HDL ADVISOR - 36864 flip-flops were inferred for signal <in_buf_t>. You may be trying to describe a RAM in a way that is incompatible with block and distributed RAM resources available on Xilinx devices, or with a specific template that is not supported. Please review the Xilinx resources documentation and the XST user manual for coding guidelines. Taking advantage of RAM resources will lead to improved device usage and reduced synthesis time.
+INFO:Xst:738 - HDL ADVISOR - 416 flip-flops were inferred for signal <re_mux_a>. You may be trying to describe a RAM in a way that is incompatible with block and distributed RAM resources available on Xilinx devices, or with a specific template that is not supported. Please review the Xilinx resources documentation and the XST user manual for coding guidelines. Taking advantage of RAM resources will lead to improved device usage and reduced synthesis time.
+INFO:Xst:738 - HDL ADVISOR - 416 flip-flops were inferred for signal <re_mux_b>. You may be trying to describe a RAM in a way that is incompatible with block and distributed RAM resources available on Xilinx devices, or with a specific template that is not supported. Please review the Xilinx resources documentation and the XST user manual for coding guidelines. Taking advantage of RAM resources will lead to improved device usage and reduced synthesis time.
+    Summary:
+	inferred   1 Finite State Machine(s).
+	inferred 75466 D-type flip-flop(s).
+	inferred  52 Adder/Subtractor(s).
+	inferred  52 Multiplier(s).
+Unit <top> synthesized.
+
+
+=========================================================================
+HDL Synthesis Report
+
+Macro Statistics
+# Registers                                            : 1152
+ 32-bit register                                       : 1152
+
+=========================================================================
+
+=========================================================================
+*                       Advanced HDL Synthesis                          *
+=========================================================================
+
+Analyzing FSM <FSM_0> for best encoding.
+Optimizing FSM <FSM> on signal <conveyer[1:5]> with one-hot encoding.
+-------------------
+ State | Encoding
+-------------------
+ 000   | 00001
+ 001   | 00010
+ 010   | 00100
+ 011   | 01000
+ 100   | 10000
+-------------------
+Reading core <ipcore_dir/ifft.ngc>.
+Loading core <ifft> for timing and area information for instance <ifft_instance>.
+
+=========================================================================
+Advanced HDL Synthesis Report
+
+Macro Statistics
+# FSMs                                                 : 1
+
+=========================================================================
+
+=========================================================================
+*                         Low Level Synthesis                           *
+=========================================================================
+
+Optimizing unit <top> ...
+
+Mapping all equations...
+Building and optimizing final netlist ...
+Found area constraint ratio of 100 (+ 5) on block top, actual ratio is 14.
+INFO:Xst:2260 - The FF/Latch <blk00000022> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk0000002c> 
+INFO:Xst:2260 - The FF/Latch <blk000004c1> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025ca> 
+INFO:Xst:2260 - The FF/Latch <blk00000023> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk0000002d> 
+INFO:Xst:2260 - The FF/Latch <blk000014da> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025cc> 
+INFO:Xst:2260 - The FF/Latch <blk0000002a> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000034> 
+INFO:Xst:2260 - The FF/Latch <blk0000002b> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000035> 
+INFO:Xst:2260 - The FF/Latch <blk00000dd9> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025d0> 
+INFO:Xst:2260 - The FF/Latch <blk00000028> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000032> 
+INFO:Xst:2260 - The FF/Latch <blk00000db3> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025cb> 
+INFO:Xst:2260 - The FF/Latch <blk00000029> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000033> 
+INFO:Xst:2260 - The FF/Latch <blk000004e7> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025cf> 
+INFO:Xst:2260 - The FF/Latch <blk00000026> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000030> 
+INFO:Xst:2260 - The FF/Latch <blk00000027> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000031> 
+INFO:Xst:2260 - The FF/Latch <blk00001b2a> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025cd> 
+INFO:Xst:2260 - The FF/Latch <blk00001ec4> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025ce> 
+INFO:Xst:2260 - The FF/Latch <blk00000024> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk0000002e> 
+INFO:Xst:2260 - The FF/Latch <blk00000025> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk0000002f> 
+INFO:Xst:2260 - The FF/Latch <blk00000022> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk0000002c> 
+INFO:Xst:2260 - The FF/Latch <blk000004c1> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025ca> 
+INFO:Xst:2260 - The FF/Latch <blk00000023> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk0000002d> 
+INFO:Xst:2260 - The FF/Latch <blk000014da> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025cc> 
+INFO:Xst:2260 - The FF/Latch <blk0000002a> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000034> 
+INFO:Xst:2260 - The FF/Latch <blk0000002b> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000035> 
+INFO:Xst:2260 - The FF/Latch <blk00000dd9> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025d0> 
+INFO:Xst:2260 - The FF/Latch <blk00000028> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000032> 
+INFO:Xst:2260 - The FF/Latch <blk00000db3> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025cb> 
+INFO:Xst:2260 - The FF/Latch <blk00000029> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000033> 
+INFO:Xst:2260 - The FF/Latch <blk000004e7> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025cf> 
+INFO:Xst:2260 - The FF/Latch <blk00000026> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000030> 
+INFO:Xst:2260 - The FF/Latch <blk00000027> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk00000031> 
+INFO:Xst:2260 - The FF/Latch <blk00001b2a> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025cd> 
+INFO:Xst:2260 - The FF/Latch <blk00001ec4> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk000025ce> 
+INFO:Xst:2260 - The FF/Latch <blk00000024> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk0000002e> 
+INFO:Xst:2260 - The FF/Latch <blk00000025> in Unit <blk00000003> is equivalent to the following FF/Latch : <blk0000002f> 
+
+Final Macro Processing ...
+
+=========================================================================
+Final Register Report
+
+Found no macro
+=========================================================================
+
+=========================================================================
+*                           Partition Report                            *
+=========================================================================
+
+Partition Implementation Status
+-------------------------------
+
+  No Partitions were found in this design.
+
+-------------------------------
+
+=========================================================================
+*                            Final Report                               *
+=========================================================================
+Final Results
+RTL Top Level Output File Name     : top.ngr
+Top Level Output File Name         : top
+Output Format                      : NGC
+Optimization Goal                  : Speed
+Keep Hierarchy                     : No
+
+Design Statistics
+# IOs                              : 42
+
+Cell Usage :
+# BELS                             : 5061
+#      GND                         : 104
+#      INV                         : 30
+#      LUT1                        : 191
+#      LUT2                        : 352
+#      LUT3                        : 902
+#      LUT4                        : 902
+#      MULT_AND                    : 174
+#      MUXCY                       : 962
+#      MUXF5                       : 460
+#      VCC                         : 85
+#      XORCY                       : 899
+# FlipFlops/Latches                : 3583
+#      FD                          : 825
+#      FDE                         : 1881
+#      FDR                         : 87
+#      FDRE                        : 790
+# RAMS                             : 99
+#      RAM32X1S                    : 93
+#      RAMB16BWER                  : 6
+# Shift Registers                  : 1176
+#      SRL16                       : 201
+#      SRL16E                      : 809
+#      SRLC16                      : 166
+# Clock Buffers                    : 1
+#      BUFGP                       : 1
+# IO Buffers                       : 32
+#      IBUF                        : 32
+# DSPs                             : 32
+#      DSP48A                      : 32
+=========================================================================
+
+Device utilization summary:
+---------------------------
+
+Selected Device : 3sd1800afg676-4 
+
+ Number of Slices:                     2397  out of  16640    14%  
+ Number of Slice Flip Flops:           3583  out of  33280    10%  
+ Number of 4 input LUTs:               3739  out of  33280    11%  
+    Number used as logic:              2377
+    Number used as Shift registers:    1176
+    Number used as RAMs:                186
+ Number of IOs:                          42
+ Number of bonded IOBs:                  33  out of    519     6%  
+ Number of BRAMs:                         6  out of     84     7%  
+ Number of GCLKs:                         1  out of     24     4%  
+ Number of DSP48s:                       32  out of     84    38%  
+
+---------------------------
+Partition Resource Summary:
+---------------------------
+
+  No Partitions were found in this design.
+
+---------------------------
+
+
+=========================================================================
+TIMING REPORT
+
+NOTE: THESE TIMING NUMBERS ARE ONLY A SYNTHESIS ESTIMATE.
+      FOR ACCURATE TIMING INFORMATION PLEASE REFER TO THE TRACE REPORT
+      GENERATED AFTER PLACE-and-ROUTE.
+
+Clock Information:
+------------------
+-----------------------------------+------------------------+-------+
+Clock Signal                       | Clock buffer(FF name)  | Load  |
+-----------------------------------+------------------------+-------+
+adc_clk                            | BUFGP                  | 4890  |
+-----------------------------------+------------------------+-------+
+
+Asynchronous Control Signals Information:
+----------------------------------------
+No asynchronous control signals found in this design
+
+Timing Summary:
+---------------
+Speed Grade: -4
+
+   Minimum period: 5.626ns (Maximum Frequency: 177.746MHz)
+   Minimum input arrival time before clock: 1.269ns
+   Maximum output required time after clock: No path found
+   Maximum combinational path delay: No path found
+
+Timing Detail:
+--------------
+All values displayed in nanoseconds (ns)
+
+=========================================================================
+Timing constraint: Default period analysis for Clock 'adc_clk'
+  Clock period: 5.626ns (frequency: 177.746MHz)
+  Total number of paths / destination ports: 40548 / 8162
+-------------------------------------------------------------------------
+Delay:               5.626ns (Levels of Logic = 10)
+  Source:            ifft_instance/blk00000003/blk00000729 (FF)
+  Destination:       ifft_instance/blk00000003/blk00000782 (FF)
+  Source Clock:      adc_clk rising
+  Destination Clock: adc_clk rising
+
+  Data Path: ifft_instance/blk00000003/blk00000729 to ifft_instance/blk00000003/blk00000782
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     FDRE:C->Q            17   0.591   1.131  blk00000729 (sig000009fc)
+     LUT2:I1->O            1   0.643   0.500  blk0000211c (sig00000a2b)
+     LUT2:I1->O            1   0.643   0.000  blk000025c8 (sig00000a29)
+     MUXCY:S->O            1   0.632   0.000  blk00000748 (sig00000a26)
+     MUXCY:CI->O           1   0.065   0.000  blk00000746 (sig00000a23)
+     MUXCY:CI->O           1   0.065   0.000  blk00000744 (sig00000a20)
+     MUXCY:CI->O           1   0.065   0.000  blk00000742 (sig00000a1d)
+     MUXCY:CI->O           1   0.065   0.000  blk00000740 (sig00000a1a)
+     MUXCY:CI->O           1   0.065   0.000  blk0000073e (sig00000a17)
+     MUXCY:CI->O           0   0.065   0.000  blk0000073c (sig00000a14)
+     XORCY:CI->O           1   0.844   0.000  blk0000073a (sig00000a16)
+     FDE:D                     0.252          blk00000782
+    ----------------------------------------
+    Total                      5.626ns (3.995ns logic, 1.631ns route)
+                                       (71.0% logic, 29.0% route)
+
+=========================================================================
+Timing constraint: Default OFFSET IN BEFORE for Clock 'adc_clk'
+  Total number of paths / destination ports: 32 / 32
+-------------------------------------------------------------------------
+Offset:              1.269ns (Levels of Logic = 3)
+  Source:            adc_im<0> (PAD)
+  Destination:       ifft_instance/blk00000003/blk00000086/blk00000089 (FF)
+  Destination Clock: adc_clk rising
+
+  Data Path: adc_im<0> to ifft_instance/blk00000003/blk00000086/blk00000089
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     IBUF:I->O             1   0.849   0.420  adc_im_0_IBUF (adc_im_0_IBUF)
+     begin scope: 'ifft_instance'
+     begin scope: 'blk00000003'
+     begin scope: 'blk00000086'
+     SRL16E:D                 -0.064          blk00000089
+    ----------------------------------------
+    Total                      1.269ns (0.849ns logic, 0.420ns route)
+                                       (66.9% logic, 33.1% route)
+
+=========================================================================
+
+
+Total REAL time to Xst completion: 173.00 secs
+Total CPU time to Xst completion: 173.20 secs
+ 
+--> 
+
+Total memory usage is 241476 kilobytes
+
+Number of errors   :    0 (   0 filtered)
+Number of warnings :   19 (   0 filtered)
+Number of infos    :   40 (   0 filtered)
+

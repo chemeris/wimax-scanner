@@ -1,0 +1,2 @@
+SETPROJECT "D:/Work/Xilinx_Project/WiMAX/ipcore_dir/coregen.cgp"
+LAUNCHXCO "D:/Work/Xilinx_Project/WiMAX/ipcore_dir/ifft.xco"
