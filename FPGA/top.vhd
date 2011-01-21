@@ -233,46 +233,48 @@ begin
   else
 	if(find_symbol='1') then
 	case conveyer is
-		when 0 => conveyer <= conveyer + 1;
-					for i in 0 to 25 loop
-						re_mux_a(i)<=signed(in_buf_t(i)(31 downto 16));
-						re_mux_b(i)<=signed(in_buf_t(1151-i)(31 downto 16));
-		
-						im_mux_a(i)<=signed(in_buf_t(i)(15 downto 0));
-						im_mux_b(i)<=signed(in_buf_t(1151-i)(15 downto 0));
-					end loop;
 		when 1 => conveyer <= conveyer + 1;
 					for i in 0 to 25 loop
-						re_mux_a(i)<=signed(in_buf_t(i+1*26)(31 downto 16));
-						re_mux_b(i)<=signed(in_buf_t(1151-i-1*26)(31 downto 16));
+						re_mux_a(i)<=signed(in_buf_t(i)(31 downto 16));
+						re_mux_b(i)<=signed(in_buf_t(1024+i)(31 downto 16));
 		
-						im_mux_a(i)<=signed(in_buf_t(i+1*26)(15 downto 0));
-						im_mux_b(i)<=signed(in_buf_t(1151-i-1*26)(15 downto 0));
+						im_mux_a(i)<=signed(in_buf_t(i)(15 downto 0));
+						im_mux_b(i)<=signed(in_buf_t(1024+i)(15 downto 0));
 					end loop;
-					
+										
 		when 2 => conveyer <= conveyer + 1;
 					for i in 0 to 25 loop
-						re_mux_a(i)<=signed(in_buf_t(i+2*26)(31 downto 16));
-						re_mux_b(i)<=signed(in_buf_t(1151-i-2*26)(31 downto 16));
+						re_mux_a(i)<=signed(in_buf_t(i+26-1)(31 downto 16));
+						re_mux_b(i)<=signed(in_buf_t(1024+i+26-1)(31 downto 16));
 		
-						im_mux_a(i)<=signed(in_buf_t(i+3*26)(15 downto 0));
-						im_mux_b(i)<=signed(in_buf_t(1151-i-2*26)(15 downto 0));
+						im_mux_a(i)<=signed(in_buf_t(i+26-1)(15 downto 0));
+						im_mux_b(i)<=signed(in_buf_t(1024+i+26-1)(15 downto 0));
 					end loop;
+					
 		when 3 => conveyer <= conveyer + 1;
 					for i in 0 to 25 loop
-						re_mux_a(i)<=signed(in_buf_t(i+3*26)(31 downto 16));
-						re_mux_b(i)<=signed(in_buf_t(1151-i-3*26)(31 downto 16));
+						re_mux_a(i)<=signed(in_buf_t(i+2*26-1)(31 downto 16));
+						re_mux_b(i)<=signed(in_buf_t(1024+i+2*26-1)(31 downto 16));
 		
-						im_mux_a(i)<=signed(in_buf_t(i+3*26)(15 downto 0));
-						im_mux_b(i)<=signed(in_buf_t(1151-i-3*26)(15 downto 0));
+						im_mux_a(i)<=signed(in_buf_t(i+3*26-1)(15 downto 0));
+						im_mux_b(i)<=signed(in_buf_t(1024+i+2*26-1)(15 downto 0));
 					end loop;
-		when 4 => 
-					for i in 0 to 23 loop
-						re_mux_a(i)<=signed(in_buf_t(i+4*26)(31 downto 16));
-						re_mux_b(i)<=signed(in_buf_t(1151-i-4*26)(31 downto 16));
+					
+		when 4 => conveyer <= conveyer + 1;
+					for i in 0 to 25 loop
+						re_mux_a(i)<=signed(in_buf_t(i+3*26-1)(31 downto 16));
+						re_mux_b(i)<=signed(in_buf_t(1024+i+3*26-1)(31 downto 16));
 		
-						im_mux_a(i)<=signed(in_buf_t(i+4*26)(15 downto 0));
-						im_mux_b(i)<=signed(in_buf_t(1151-i-4*26)(15 downto 0));
+						im_mux_a(i)<=signed(in_buf_t(i+3*26-1)(15 downto 0));
+						im_mux_b(i)<=signed(in_buf_t(1024+i+3*26-1)(15 downto 0));
+					end loop;
+		when 0 => 
+					for i in 0 to 23 loop
+						re_mux_a(i)<=signed(in_buf_t(i+4*26-1)(31 downto 16));
+						re_mux_b(i)<=signed(in_buf_t(1024+i+4*26-1)(31 downto 16));
+		
+						im_mux_a(i)<=signed(in_buf_t(i+4*26-1)(15 downto 0));
+						im_mux_b(i)<=signed(in_buf_t(1024+i+4*26-1)(15 downto 0));
 					end loop;
 					re_mux_a(24)<=(others => '0'); re_mux_b(24)<=(others => '0');
 					im_mux_a(24)<=(others => '0'); im_mux_b(24)<=(others => '0');
@@ -282,15 +284,23 @@ begin
 					conveyer <= 0;
 		when others => null;
 	end case;
-	if(conveyer = 1) then
+	if(conveyer = 2) then
 		sum_re <= sum_re_buf;
 		sum_im <= sum_im_buf;
 		
-		sum_re_buf <= out_mux_re(0)+out_mux_re(1)+out_mux_re(2)+out_mux_re(3)+out_mux_re(4)+out_mux_re(5)+
-				out_mux_re(6)+out_mux_re(7)+out_mux_re(8)+out_mux_re(9)+
-				out_mux_re(10)+out_mux_re(11)+out_mux_re(12)+out_mux_re(13)+out_mux_re(14)+out_mux_re(15)+
-				out_mux_re(16)+out_mux_re(17)+out_mux_re(18)+out_mux_re(19)+
-				out_mux_re(20)+out_mux_re(21)+out_mux_re(22)+out_mux_re(23)+out_mux_re(24)+out_mux_re(25);
+		sum_re_buf <= (((((out_mux_re(0)+out_mux_re(1)) + 
+		              (out_mux_re(2)+out_mux_re(3))) +
+						  ((out_mux_re(4)+out_mux_re(5)) +
+						  (out_mux_re(6)+out_mux_re(7)))) +
+						  (((out_mux_re(8)+out_mux_re(9)) +
+						  (out_mux_re(10)+out_mux_re(11))) +
+						  ((out_mux_re(12)+out_mux_re(13)) +
+						  (out_mux_re(14)+out_mux_re(15))))) +
+						  ((((out_mux_re(16)+out_mux_re(17)) + 
+						  (out_mux_re(18)+out_mux_re(19))) +
+						  ((out_mux_re(20)+out_mux_re(21)) +
+						  (out_mux_re(22)+out_mux_re(23)))) +
+						  (out_mux_re(24)+out_mux_re(25))));
 		sum_im_buf <= out_mux_im(0)+out_mux_im(1)+out_mux_im(2)+out_mux_im(3)+out_mux_im(4)+out_mux_im(5)+
 				out_mux_im(6)+out_mux_im(7)+out_mux_im(8)+out_mux_im(9)+
 				out_mux_im(10)+out_mux_im(11)+out_mux_im(12)+out_mux_im(13)+out_mux_im(14)+out_mux_im(15)+
