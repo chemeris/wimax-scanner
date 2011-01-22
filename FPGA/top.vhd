@@ -32,16 +32,14 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
+use work.params.All;
+
 entity top is
-generic ( cp_len : integer := 128;
-          fft_len : integer := 1024;
-          adc_width : integer := 16
-          );
-Port 	 ( clk : in  STD_LOGIC;
-			adc_clk : in STD_LOGIC;
+Port 	 ( clk : in  STD_LOGIC;				-- global clock
+			adc_clk : in STD_LOGIC;			-- clock of ADC
 			rst: IN std_logic;
-			adc_re : in  STD_LOGIC_VECTOR (15 downto 0);
-			adc_im : in  STD_LOGIC_VECTOR (15 downto 0);
+			adc_re : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0);    -- Q input from ADC
+			adc_im : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0);		-- I input from ADC
          data : out  STD_LOGIC_VECTOR (7 downto 0)
 			);
 end top;
@@ -53,8 +51,8 @@ component ifft
 	clk: IN std_logic;
 	ce: IN std_logic;
 	start: IN std_logic;
-	xn_re: IN std_logic_VECTOR(15 downto 0);
-	xn_im: IN std_logic_VECTOR(15 downto 0);
+	xn_re: IN std_logic_VECTOR(adc_width - 1 downto 0);
+	xn_im: IN std_logic_VECTOR(adc_width - 1 downto 0);
 	fwd_inv: IN std_logic;
 	fwd_inv_we: IN std_logic;
 	scale_sch: IN std_logic_VECTOR(9 downto 0);
@@ -66,8 +64,8 @@ component ifft
 	done: OUT std_logic;
 	dv: OUT std_logic;
 	xk_index: OUT std_logic_VECTOR(9 downto 0);
-	xk_re: OUT std_logic_VECTOR(15 downto 0);
-	xk_im: OUT std_logic_VECTOR(15 downto 0));
+	xk_re: OUT std_logic_VECTOR(adc_width - 1 downto 0);
+	xk_im: OUT std_logic_VECTOR(adc_width - 1 downto 0));
 end component;
 
 -- Various constants
@@ -75,14 +73,15 @@ constant cp_max : integer := cp_len-1;
 constant cp_max_log : integer := 7;
 constant adc_max_bit : integer := adc_width-1;
 constant adc_max_bit_bdl : integer := 2*adc_width-1;
+constant Ts_samples : integer := fft_len + cp_len;  --full OFDMA symbol time, samples
 
 signal start, fwd_inv, fwd_inv_we, scale_sch_we, rfd, busy, edone, done, dv  : std_logic;
 signal scale_sch, xn_index, xk_index : std_logic_VECTOR(9 downto 0);
-signal xk_re, xk_im : std_logic_VECTOR(15 downto 0);
+signal xk_re, xk_im : std_logic_VECTOR(adc_width - 1 downto 0);
 signal ce: std_logic;
 
 -- Input from ADC
-type symbol_buf_type is array (0 to 1151) of std_ulogic_vector(15 downto 0);
+type symbol_buf_type is array (0 to Ts_samples - 1) of std_ulogic_vector(15 downto 0);
 signal in_buf_re, in_buf_im : symbol_buf_type;
 
 -- FFT
@@ -190,9 +189,9 @@ begin
 		end if;
 
 		-- Read new data from ADC
-		in_buf_re(1151) <= To_StdULogicVector(adc_re);
-		in_buf_im(1151) <= To_StdULogicVector(adc_im);
-		for i in 0 to 1150 loop
+		in_buf_re(Ts_samples - 1) <= To_StdULogicVector(adc_re);
+		in_buf_im(Ts_samples - 1) <= To_StdULogicVector(adc_im);
+		for i in 0 to (Ts_samples - 2) loop
 			in_buf_re(i)<=in_buf_re(i+1);
 			in_buf_im(i)<=in_buf_im(i+1);
 		end loop;
@@ -200,9 +199,12 @@ begin
 		-- Find maximum in convolution values.
 		if (conv_sum > conv_sum_max) then
 			conv_sum_max <= conv_sum;
-			-- FIXME:: This hardcoded delay MUST be somehow calculated or
-			--         better described!
-			point_max <= count_point - fft_len-1;
+			
+			--This calculation introduce 3 cycle delay,
+			--because first cycle is delayed on multiply,
+			--second - on load data to registers,
+			--third - on read result from adder.
+			point_max <= count_point - fft_len - 3;
 		end if;
 
 		-- Update convolution
