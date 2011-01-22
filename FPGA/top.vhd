@@ -33,6 +33,10 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 --use UNISIM.VComponents.all;
 
 entity top is
+generic ( cp_len : integer := 128;
+          fft_len : integer := 1024;
+          adc_width : integer := 16
+          );
 Port 	 ( clk : in  STD_LOGIC;
 			adc_clk : in STD_LOGIC;
 			rst: IN std_logic;
@@ -66,47 +70,37 @@ component ifft
 	xk_im: OUT std_logic_VECTOR(15 downto 0));
 end component;
 
-signal count_point, point_re_max, point_im_max  : std_logic_VECTOR(15 downto 0):=x"0000";
+-- Various constants
+constant cp_max : integer := cp_len-1;
+constant cp_max_log : integer := 7;
+constant adc_max_bit : integer := adc_width-1;
+constant adc_max_bit_bdl : integer := 2*adc_width-1;
+
 signal start, fwd_inv, fwd_inv_we, scale_sch_we, rfd, busy, edone, done, dv  : std_logic;
 signal scale_sch, xn_index, xk_index : std_logic_VECTOR(9 downto 0);
 signal xk_re, xk_im : std_logic_VECTOR(15 downto 0);
 signal ce: std_logic;
 
---type sumbol_buf_type is array (0 to 1151) of std_logic_vector(31 downto 0);
-type sumbol_buf_type is array (0 to 1151) of std_ulogic_vector(31 downto 0);
-signal in_buf_t, in_buf_freq  : sumbol_buf_type;
+-- Input from ADC
+type symbol_buf_type is array (0 to 1151) of std_ulogic_vector(15 downto 0);
+signal in_buf_re, in_buf_im : symbol_buf_type;
+
+-- FFT
+signal in_buf_freq  : symbol_buf_type;
 signal in_buf_freq_en_a, in_buf_freq_wr, in_buf_freq_en_b : std_logic;
 signal in_buf_freq_adr_wr, in_buf_freq_adr_rd, count  : std_logic_VECTOR(10 downto 0):="00000000000";
 signal data_fft : std_logic_vector(31 downto 0);
 signal find_symbol : std_logic;
 
-type re_im_mux_type is array (0 to 25) of signed(15 downto 0);
-type out_mux_type is array (0 to 25) of signed(31 downto 0);
-signal re_mux_a, re_mux_b, im_mux_a, im_mux_b  : re_im_mux_type;
-signal out_mux_re, out_mux_im  : out_mux_type;
-signal sum_re, sum_im, sum_re_buf, sum_im_buf, sum_re_max, sum_im_max  : signed(36 downto 0);
-signal conveyer : integer range 0 to 5;
+-- Find frame
+--   Convolution calculation
+type conv_mult_cp_type is array (0 to cp_max) of signed(adc_max_bit_bdl downto 0);
+signal conv_mult_re, conv_mult_im : conv_mult_cp_type;
+signal conv_sum : signed(adc_max_bit_bdl+cp_max_log downto 0);
+--   Maximum search
+signal count_point, point_max : std_logic_VECTOR(15 downto 0):=x"0000";
+signal conv_sum_max : signed(adc_max_bit_bdl+cp_max_log downto 0);
 
---signal	crc_en : std_logic;
---signal	rst : std_logic;
---signal	crc_out : std_logic_vector(31 downto 0);
---signal	data_buf : std_logic_vector(7 downto 0);
---signal	calc,	reset, d_valid : std_logic;
---signal	crc_reg : std_logic_vector(31 downto 0);
---signal	crc : std_logic_vector(7 downto 0);
-
---COMPONENT lfsr
---	PORT(
---		d : IN std_logic_vector(7 downto 0);
---		calc : IN std_logic;
---		init : IN std_logic;
---		d_valid : IN std_logic;
---		clk : IN std_logic;
---		reset : IN std_logic;
---		crc_reg : OUT std_logic_vector(31 downto 0);
---		crc : OUT std_logic_vector(7 downto 0)
---		);
---	END COMPONENT;
 
 begin
 
@@ -130,17 +124,6 @@ ifft_instance : ifft
 			xk_index => xk_index,
 			xk_re => xk_re,
 			xk_im => xk_im);
-			
---	Inst_lfsr: lfsr PORT MAP(
---		crc_reg => crc_reg,
---		crc => crc,
---		d => data_buf,
---		calc => crc_en,
---		init => rst,
---		d_valid => d_valid,
---		clk => clk,
---		reset => reset
---	);
 
 fwd_inv_we <= '1';
 fwd_inv <= '1'; --  '1' - FFT, '0' - IFFT
@@ -176,31 +159,65 @@ end process;
 
 
 process(adc_clk)
+variable conv_mult_re_var, conv_mult_im_var : signed(adc_max_bit_bdl downto 0);
 begin
   if rising_edge(adc_clk) then
 	if(rst = '1') then
+		-- Do nothing if Reset is high.
+		--   Reset input from ADC
 		for i in 0 to 1151 loop
-			in_buf_t(i)<=(others => '0');
+			in_buf_re(i)<=(others => '0');
+			in_buf_im(i)<=(others => '0');
 		end loop;
+
+		--   Reset convolution calculation
+		conv_mult_re_var := (others => '0');
+		conv_mult_im_var := (others => '0');
+		conv_sum <= (others => '0');
+		for i in 0 to cp_max loop
+			conv_mult_re(i)<=(others => '0');
+			conv_mult_im(i)<=(others => '0');
+		end loop;
+		count_point <= (others => '0');
+		point_max <= (others => '0');
+		conv_sum_max <= (others => '0');
 	else
+		-- Handle counter.
 		if (conv_integer(count_point) < 55999) then
 			count_point <= count_point + 1;
 		else
 			count_point <= (others => '0');
 		end if;
-		
-		in_buf_t(1151) <= To_StdULogicVector(adc_re & adc_im);
-		for i in 1 to 1151 loop
-			in_buf_t(i-1)<=in_buf_t(i);
+
+		-- Read new data from ADC
+		in_buf_re(1151) <= To_StdULogicVector(adc_re);
+		in_buf_im(1151) <= To_StdULogicVector(adc_im);
+		for i in 0 to 1150 loop
+			in_buf_re(i)<=in_buf_re(i+1);
+			in_buf_im(i)<=in_buf_im(i+1);
 		end loop;
 		
---	in_buf_t(conv_integer(count)) <= adc_re & adc_im;
---	if (conv_integer(count) < 1151) then
---		count <= count + 1;
---	else
---		count <= (others => '0');
---	end if;
---  
+		-- Find maximum in convolution values.
+		if (conv_sum > conv_sum_max) then
+			conv_sum_max <= conv_sum;
+			-- FIXME:: This hardcoded delay MUST be somehow calculated or
+			--         better described!
+			point_max <= count_point - fft_len-1;
+		end if;
+
+		-- Update convolution
+		conv_mult_re_var := signed(in_buf_re(cp_max))*signed(in_buf_re(cp_max+fft_len));
+		conv_mult_im_var := signed(in_buf_im(cp_max))*signed(in_buf_im(cp_max+fft_len));
+		conv_mult_re(cp_max) <= conv_mult_re_var;
+		conv_mult_im(cp_max) <= conv_mult_im_var;
+		conv_sum <= conv_sum - conv_mult_re(0) - conv_mult_im(0)
+ 		          + conv_mult_re_var + conv_mult_im_var;
+		for i in 0 to cp_max-1 loop
+			conv_mult_re(i)<=conv_mult_re(i+1);
+			conv_mult_im(i)<=conv_mult_im(i+1);
+		end loop;
+		
+		
 --	if(done = '1') then 
 --		in_buf_freq_en_a <= '1'; in_buf_freq_wr <= '1';
 --	else
@@ -208,143 +225,6 @@ begin
 --	end if;
   end if;
   end if;
-end process;
-
-process(re_mux_a,re_mux_b, im_mux_a, im_mux_b)
-begin
-for i in 0 to 25 loop
-	out_mux_re(i)<=re_mux_a(i)(15 downto 0) * re_mux_b(i)(15 downto 0);
-	out_mux_im(i)<=im_mux_a(i)(15 downto 0) * im_mux_b(i)(15 downto 0);
-end loop;
-end process;
-
-process(clk)
-begin
-  if rising_edge(clk) then
-  if(rst = '1') then
-		for i in 0 to 25 loop
-			re_mux_a(i)<=(others => '0');
-			re_mux_b(i)<=(others => '0');
-			im_mux_a(i)<=(others => '0');
-			im_mux_b(i)<=(others => '0');
-		end loop;
-		sum_re_buf <= (others => '0');
-		sum_im_buf <= (others => '0');
-  else
-	if(find_symbol='1') then
-	case conveyer is
-		when 1 => conveyer <= conveyer + 1;
-					for i in 0 to 25 loop
-						re_mux_a(i)<=signed(in_buf_t(i)(31 downto 16));
-						re_mux_b(i)<=signed(in_buf_t(1024+i)(31 downto 16));
-		
-						im_mux_a(i)<=signed(in_buf_t(i)(15 downto 0));
-						im_mux_b(i)<=signed(in_buf_t(1024+i)(15 downto 0));
-					end loop;
-										
-		when 2 => conveyer <= conveyer + 1;
-					for i in 0 to 25 loop
-						re_mux_a(i)<=signed(in_buf_t(i+26-1)(31 downto 16));
-						re_mux_b(i)<=signed(in_buf_t(1024+i+26-1)(31 downto 16));
-		
-						im_mux_a(i)<=signed(in_buf_t(i+26-1)(15 downto 0));
-						im_mux_b(i)<=signed(in_buf_t(1024+i+26-1)(15 downto 0));
-					end loop;
-					
-		when 3 => conveyer <= conveyer + 1;
-					for i in 0 to 25 loop
-						re_mux_a(i)<=signed(in_buf_t(i+2*26-1)(31 downto 16));
-						re_mux_b(i)<=signed(in_buf_t(1024+i+2*26-1)(31 downto 16));
-		
-						im_mux_a(i)<=signed(in_buf_t(i+3*26-1)(15 downto 0));
-						im_mux_b(i)<=signed(in_buf_t(1024+i+2*26-1)(15 downto 0));
-					end loop;
-					
-		when 4 => conveyer <= conveyer + 1;
-					for i in 0 to 25 loop
-						re_mux_a(i)<=signed(in_buf_t(i+3*26-1)(31 downto 16));
-						re_mux_b(i)<=signed(in_buf_t(1024+i+3*26-1)(31 downto 16));
-		
-						im_mux_a(i)<=signed(in_buf_t(i+3*26-1)(15 downto 0));
-						im_mux_b(i)<=signed(in_buf_t(1024+i+3*26-1)(15 downto 0));
-					end loop;
-		when 0 => 
-					for i in 0 to 23 loop
-						re_mux_a(i)<=signed(in_buf_t(i+4*26-1)(31 downto 16));
-						re_mux_b(i)<=signed(in_buf_t(1024+i+4*26-1)(31 downto 16));
-		
-						im_mux_a(i)<=signed(in_buf_t(i+4*26-1)(15 downto 0));
-						im_mux_b(i)<=signed(in_buf_t(1024+i+4*26-1)(15 downto 0));
-					end loop;
-					re_mux_a(24)<=(others => '0'); re_mux_b(24)<=(others => '0');
-					im_mux_a(24)<=(others => '0'); im_mux_b(24)<=(others => '0');
-					re_mux_a(25)<=(others => '0'); re_mux_b(25)<=(others => '0');
-					im_mux_a(25)<=(others => '0'); im_mux_b(25)<=(others => '0');
-
-					conveyer <= 0;
-		when others => null;
-	end case;
-	if(conveyer = 2) then
-		sum_re <= sum_re_buf;
-		sum_im <= sum_im_buf;
-		
-		sum_re_buf <= (((((out_mux_re(0)+out_mux_re(1)) + 
-		              (out_mux_re(2)+out_mux_re(3))) +
-						  ((out_mux_re(4)+out_mux_re(5)) +
-						  (out_mux_re(6)+out_mux_re(7)))) +
-						  (((out_mux_re(8)+out_mux_re(9)) +
-						  (out_mux_re(10)+out_mux_re(11))) +
-						  ((out_mux_re(12)+out_mux_re(13)) +
-						  (out_mux_re(14)+out_mux_re(15))))) +
-						  ((((out_mux_re(16)+out_mux_re(17)) + 
-						  (out_mux_re(18)+out_mux_re(19))) +
-						  ((out_mux_re(20)+out_mux_re(21)) +
-						  (out_mux_re(22)+out_mux_re(23)))) +
-						  (out_mux_re(24)+out_mux_re(25))));
-		sum_im_buf <= out_mux_im(0)+out_mux_im(1)+out_mux_im(2)+out_mux_im(3)+out_mux_im(4)+out_mux_im(5)+
-				out_mux_im(6)+out_mux_im(7)+out_mux_im(8)+out_mux_im(9)+
-				out_mux_im(10)+out_mux_im(11)+out_mux_im(12)+out_mux_im(13)+out_mux_im(14)+out_mux_im(15)+
-				out_mux_im(16)+out_mux_im(17)+out_mux_im(18)+out_mux_im(19)+
-				out_mux_im(20)+out_mux_im(21)+out_mux_im(22)+out_mux_im(23)+out_mux_im(24)+out_mux_im(25);
-	else
-		sum_re_buf <= sum_re_buf + out_mux_re(0)+out_mux_re(1)+out_mux_re(2)+out_mux_re(3)+out_mux_re(4)+out_mux_re(5)+
-				out_mux_re(6)+out_mux_re(7)+out_mux_re(8)+out_mux_re(9)+
-				out_mux_re(10)+out_mux_re(11)+out_mux_re(12)+out_mux_re(13)+out_mux_re(14)+out_mux_re(15)+
-				out_mux_re(16)+out_mux_re(17)+out_mux_re(18)+out_mux_re(19)+
-				out_mux_re(20)+out_mux_re(21)+out_mux_re(22)+out_mux_re(23)+out_mux_re(24)+out_mux_re(25);
-		sum_im_buf <=sum_im_buf + out_mux_im(0)+out_mux_im(1)+out_mux_im(2)+out_mux_im(3)+out_mux_im(4)+out_mux_im(5)+
-				out_mux_im(6)+out_mux_im(7)+out_mux_im(8)+out_mux_im(9)+
-				out_mux_im(10)+out_mux_im(11)+out_mux_im(12)+out_mux_im(13)+out_mux_im(14)+out_mux_im(15)+
-				out_mux_im(16)+out_mux_im(17)+out_mux_im(18)+out_mux_im(19)+
-				out_mux_im(20)+out_mux_im(21)+out_mux_im(22)+out_mux_im(23)+out_mux_im(24)+out_mux_im(25);
-	end if;
-	end if;
-  end if;  
-  end if;
-end process;
-
-process(clk)
-begin
-  if rising_edge(clk) then
-	if(rst = '1') then
-		sum_re_max <= (others => '0');
-		sum_im_max <= (others => '0');
-	else
-		if(find_symbol='1' and conveyer = 2) then
-		 if (conv_integer(count_point) = 0) then sum_re_max <= (others => '0'); sum_im_max <= (others => '0');
-		 else
-				if(sum_re_max < sum_re) then
-					sum_re_max <= sum_re;
-					point_re_max <= count_point;
-				end if;
-				if(sum_im_max < sum_im) then
-					sum_im_max <= sum_im;
-					point_im_max <= count_point;
-				end if;
-		 end if;
-		end if;
-  end if;  
- end if;
 end process;
 
 end Behavioral;
