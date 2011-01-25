@@ -32,14 +32,12 @@
 component ifft
 	port (
 	clk: IN std_logic;
-	ce: IN std_logic;
+	sclr: IN std_logic;
 	start: IN std_logic;
 	xn_re: IN std_logic_VECTOR(15 downto 0);
 	xn_im: IN std_logic_VECTOR(15 downto 0);
 	fwd_inv: IN std_logic;
 	fwd_inv_we: IN std_logic;
-	scale_sch: IN std_logic_VECTOR(9 downto 0);
-	scale_sch_we: IN std_logic;
 	rfd: OUT std_logic;
 	xn_index: OUT std_logic_VECTOR(9 downto 0);
 	busy: OUT std_logic;
@@ -47,8 +45,8 @@ component ifft
 	done: OUT std_logic;
 	dv: OUT std_logic;
 	xk_index: OUT std_logic_VECTOR(9 downto 0);
-	xk_re: OUT std_logic_VECTOR(15 downto 0);
-	xk_im: OUT std_logic_VECTOR(15 downto 0));
+	xk_re: OUT std_logic_VECTOR(26 downto 0);
+	xk_im: OUT std_logic_VECTOR(26 downto 0));
 end component;
 
 -- Synplicity black box declaration
@@ -64,14 +62,12 @@ attribute syn_black_box of ifft: component is true;
 your_instance_name : ifft
 		port map (
 			clk => clk,
-			ce => ce,
+			sclr => sclr,
 			start => start,
 			xn_re => xn_re,
 			xn_im => xn_im,
 			fwd_inv => fwd_inv,
 			fwd_inv_we => fwd_inv_we,
-			scale_sch => scale_sch,
-			scale_sch_we => scale_sch_we,
 			rfd => rfd,
 			xn_index => xn_index,
 			busy => busy,

@@ -1,40 +1,25 @@
 ##############################################################
-#
-# Xilinx Core Generator version 12.2
-# Date: Sat Jan 15 21:49:18 2011
-#
 ##############################################################
-#
-#  This file contains the customisation parameters for a
-#  Xilinx CORE Generator IP GUI. It is strongly recommended
-#  that you do not manually alter this file as it may cause
-#  unexpected and unsupported behavior.
-#
 ##############################################################
-#
-# BEGIN Project Options
 SET addpads = false
 SET asysymbol = true
-SET busformat = BusFormatAngleBracketNotRipped
 SET createndf = false
-SET designentry = VHDL
-SET device = xc3sd1800a
-SET devicefamily = spartan3adsp
-SET flowvendor = Foundation_ISE
 SET formalverification = false
 SET foundationsym = false
 SET implementationfiletype = Ngc
-SET package = fg676
 SET removerpms = false
 SET simulationfiles = Behavioral
+SET workingdirectory = ./tmp/
+SET designentry = VHDL
+SET BusFormat = BusFormatAngleBracketNotRipped
+SET devicefamily = spartan3adsp
+SET device = xc3sd1800a
+SET package = fg676
 SET speedgrade = -4
-SET verilogsim = true
-SET vhdlsim = true
-# END Project Options
-# BEGIN Select
+SET FlowVendor = Foundation_ISE
+SET VerilogSim = True
+SET VHDLSim = True
 SELECT Fast_Fourier_Transform family Xilinx,_Inc. 7.1
-# END Select
-# BEGIN Parameters
 CSET butterfly_type=use_luts
 CSET ce=false
 CSET channels=1
@@ -56,10 +41,7 @@ CSET phase_factor_width=24
 CSET rounding_modes=truncation
 CSET run_time_configurable_transform_length=false
 CSET scaling_options=scaled
-CSET sclr=false
+CSET sclr=true
 CSET target_clock_frequency=50
-CSET target_data_throughput=12
+CSET target_data_throughput=50
 CSET transform_length=1024
-# END Parameters
-GENERATE
-# CRC: 25a752a6

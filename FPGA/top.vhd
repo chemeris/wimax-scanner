@@ -38,8 +38,8 @@ entity top is
 Port 	 ( clk : in  STD_LOGIC;				-- global clock
 			adc_clk : in STD_LOGIC;			-- clock of ADC
 			rst: IN std_logic;
-			adc_re : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0);    -- Q input from ADC
-			adc_im : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0);		-- I input from ADC
+			adc_re : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0);    -- I input from ADC
+			adc_im : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0);	  -- Q input from ADC
          data : out  STD_LOGIC_VECTOR (7 downto 0)
 			);
 end top;
@@ -49,14 +49,14 @@ architecture Behavioral of top is
 component ifft
 	port (
 	clk: IN std_logic;
-	ce: IN std_logic;
+	sclr: IN std_logic;
 	start: IN std_logic;
 	xn_re: IN std_logic_VECTOR(adc_width - 1 downto 0);
 	xn_im: IN std_logic_VECTOR(adc_width - 1 downto 0);
 	fwd_inv: IN std_logic;
 	fwd_inv_we: IN std_logic;
-	scale_sch: IN std_logic_VECTOR(9 downto 0);
-	scale_sch_we: IN std_logic;
+--	scale_sch: IN std_logic_VECTOR(9 downto 0);
+--	scale_sch_we: IN std_logic;
 	rfd: OUT std_logic;
 	xn_index: OUT std_logic_VECTOR(9 downto 0);
 	busy: OUT std_logic;
@@ -64,8 +64,8 @@ component ifft
 	done: OUT std_logic;
 	dv: OUT std_logic;
 	xk_index: OUT std_logic_VECTOR(9 downto 0);
-	xk_re: OUT std_logic_VECTOR(adc_width - 1 downto 0);
-	xk_im: OUT std_logic_VECTOR(adc_width - 1 downto 0));
+	xk_re: OUT std_logic_VECTOR(26 downto 0);
+	xk_im: OUT std_logic_VECTOR(26 downto 0));
 end component;
 
 -- Various constants
@@ -75,21 +75,27 @@ constant adc_max_bit : integer := adc_width-1;
 constant adc_max_bit_bdl : integer := 2*adc_width-1;
 constant Ts_samples : integer := fft_len + cp_len;  --full OFDMA symbol time, samples
 
-signal start, fwd_inv, fwd_inv_we, scale_sch_we, rfd, busy, edone, done, dv  : std_logic;
-signal scale_sch, xn_index, xk_index : std_logic_VECTOR(9 downto 0);
-signal xk_re, xk_im : std_logic_VECTOR(adc_width - 1 downto 0);
-signal ce: std_logic;
+
 
 -- Input from ADC
 type symbol_buf_type is array (0 to Ts_samples - 1) of std_ulogic_vector(15 downto 0);
 signal in_buf_re, in_buf_im : symbol_buf_type;
 
 -- FFT
+signal start, fwd_inv, fwd_inv_we, scale_sch_we, rfd, busy, edone, done, dv  : std_logic;
+signal scale_sch, xn_index, xk_index : std_logic_VECTOR(9 downto 0);
+signal xk_re, xk_im : std_logic_VECTOR(26 downto 0);
+signal sclr: std_logic;
+
 signal in_buf_freq  : symbol_buf_type;
 signal in_buf_freq_en_a, in_buf_freq_wr, in_buf_freq_en_b : std_logic;
 signal in_buf_freq_adr_wr, in_buf_freq_adr_rd, count  : std_logic_VECTOR(10 downto 0):="00000000000";
 signal data_fft : std_logic_vector(31 downto 0);
-signal find_symbol : std_logic;
+signal xn_re: std_logic_VECTOR(adc_width - 1 downto 0);
+signal xn_im: std_logic_VECTOR(adc_width - 1 downto 0);
+--signal start_fft : std_logic;
+signal takt : integer  := 0;
+signal count_cp_pos : integer:=0; -- must be range (fft_len - 1) to 0
 
 -- Find frame
 --   Convolution calculation
@@ -97,7 +103,7 @@ type conv_mult_cp_type is array (0 to cp_max) of signed(adc_max_bit_bdl downto 0
 signal conv_mult_re, conv_mult_im : conv_mult_cp_type;
 signal conv_sum : signed(adc_max_bit_bdl+cp_max_log downto 0);
 --   Maximum search
-signal count_point, point_max : std_logic_VECTOR(15 downto 0):=x"0000";
+signal count_point, point_max, point_max_old : std_logic_VECTOR(15 downto 0):=x"0000";
 signal conv_sum_max : signed(adc_max_bit_bdl+cp_max_log downto 0);
 
 
@@ -105,15 +111,15 @@ begin
 
 ifft_instance : ifft
 		port map (
-			clk => adc_clk,
-			ce => ce,
+			clk => clk,
+			sclr => sclr,
 			start => start,
-			xn_re => adc_re,
-			xn_im => adc_im,
+			xn_re => xn_re,
+			xn_im => xn_im,
 			fwd_inv => fwd_inv,
 			fwd_inv_we => fwd_inv_we,
-			scale_sch => scale_sch,
-			scale_sch_we => scale_sch_we,
+--			scale_sch => scale_sch,
+--			scale_sch_we => scale_sch_we,
 			rfd => rfd,
 			xn_index => xn_index,
 			busy => busy,
@@ -124,13 +130,7 @@ ifft_instance : ifft
 			xk_re => xk_re,
 			xk_im => xk_im);
 
-fwd_inv_we <= '1';
-fwd_inv <= '1'; --  '1' - FFT, '0' - IFFT
-scale_sch <=  "0110001110";
-scale_sch_we <= '1';
-start <= '1';
-find_symbol <= '1';
-ce <= not(rst);
+
 
 process (adc_clk)
 begin
@@ -200,11 +200,10 @@ begin
 		if (conv_sum > conv_sum_max) then
 			conv_sum_max <= conv_sum;
 			
-			--This calculation introduce 3 cycle delay,
-			--because first cycle is delayed on multiply,
-			--second - on load data to registers,
-			--third - on read result from adder.
-			point_max <= count_point - fft_len - 3;
+			-- FIXME:: This hardcoded delay MUST be somehow calculated or
+			--         better described!
+			point_max <= count_point - fft_len - 1;
+			
 		end if;
 
 		-- Update convolution
@@ -227,6 +226,60 @@ begin
 --	end if;
   end if;
   end if;
+end process;
+
+
+process (clk)
+
+begin
+   if rising_edge(clk) then
+	if(rst = '1') then
+		sclr <= '1';
+		start <= '0';
+		fwd_inv_we <= '0';
+		fwd_inv <= '1'; --  '1' - FFT, '0' - IFFT
+		scale_sch <=  "0110001110";
+		scale_sch_we <= '0';
+		xn_re <= (others => '0');
+		xn_im <= (others => '0');
+	else
+				--  Start calculating FFT
+      if (point_max /= point_max_old) then
+			point_max_old <= point_max;
+			sclr <= '1';
+			start <= '1'; -- start for calculate FFT
+			xn_re <= To_StdLogicVector(in_buf_re(cp_max-1)); --load firths I point of symbol into fft block
+			xn_im <= To_StdLogicVector(in_buf_im(cp_max-1)); --load firths Q point of symbol into fft block
+			count_cp_pos <= 1;
+			fwd_inv_we <= '1';
+			fwd_inv <= '1'; --  '1' - FFT, '0' - IFFT
+			scale_sch <=  "1010101011";
+			scale_sch_we <= '1';
+		else
+			sclr <= '0';
+			if (rfd = '1') then start <= '0'; end if;-- end of calculate FFT
+		end if;
+		
+		if (rfd = '1') then
+			-- load data into fft block
+			xn_re <= To_StdLogicVector(in_buf_re(cp_max-1 + count_cp_pos + 1)); --load I point of symbol into fft block
+			xn_im <= To_StdLogicVector(in_buf_im(cp_max-1 + count_cp_pos + 1)); --load Q point of symbol into fft block
+			
+			-- Calculating position of next point	
+			if (takt < (N_cycles - 1)) then
+				takt <= takt + 1;
+			else 
+				takt <= 0;
+			end if;
+			if (takt /= 1) then count_cp_pos <= count_cp_pos + 1;	end if;
+			
+		else
+			takt <= 0;
+			count_cp_pos <= 0;
+		end if;
+		
+	end if;
+   end if;
 end process;
 
 end Behavioral;

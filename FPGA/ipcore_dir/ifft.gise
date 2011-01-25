@@ -23,6 +23,7 @@
 
   <files xmlns="http://www.xilinx.com/XMLSchema">
     <file xil_pn:fileType="FILE_ASY" xil_pn:name="ifft.asy" xil_pn:origination="imported"/>
+    <file xil_pn:fileType="FILE_SYMBOL" xil_pn:name="ifft.sym" xil_pn:origination="imported"/>
     <file xil_pn:fileType="FILE_VEO" xil_pn:name="ifft.veo" xil_pn:origination="imported"/>
     <file xil_pn:fileType="FILE_VHO" xil_pn:name="ifft.vho" xil_pn:origination="imported"/>
   </files>

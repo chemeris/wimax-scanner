@@ -4,15 +4,7 @@ Customizing IP...
 Release 12.2 - Xilinx CORE Generator IP GUI Launcher M.63c (nt)
 Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
 Initializing IP model...
-WARNING:coreutil - WARNING:sim:602 - The parameter 'target_data_throughput' is
-   disabled and can't
-      be set to any other value than '50'. Its value will be reset from '12' to
-   its
-      last valid value '50'.
-WARNING:coreutil - WARNING:sim:192 - Xco Parameter changed from
-   (target_data_throughput,12) to
-      (target_data_throughput,50) during Recustomization.
-   Finished initialising IP model.
+Finished initialising IP model.
 Finished Customizing.
 Generating IP...
 WARNING:sim:471 - The chosen IP does not support a VHDL behavioral model,
@@ -31,7 +23,6 @@ XST: Low Level Synthesis
 XST: Partition Report
 XST: Design Summary
 Generating Implementation files.
-Generating the VHDL wrapper.
 Generating ISE symbol file...
 Generating NGC file.
 Generating VHDL structural model.

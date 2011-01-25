@@ -33,14 +33,12 @@
 //----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
 ifft YourInstanceName (
 	.clk(clk),
-	.ce(ce),
+	.sclr(sclr),
 	.start(start),
 	.xn_re(xn_re), // Bus [15 : 0] 
 	.xn_im(xn_im), // Bus [15 : 0] 
 	.fwd_inv(fwd_inv),
 	.fwd_inv_we(fwd_inv_we),
-	.scale_sch(scale_sch), // Bus [9 : 0] 
-	.scale_sch_we(scale_sch_we),
 	.rfd(rfd),
 	.xn_index(xn_index), // Bus [9 : 0] 
 	.busy(busy),
@@ -48,8 +46,8 @@ ifft YourInstanceName (
 	.done(done),
 	.dv(dv),
 	.xk_index(xk_index), // Bus [9 : 0] 
-	.xk_re(xk_re), // Bus [15 : 0] 
-	.xk_im(xk_im)); // Bus [15 : 0] 
+	.xk_re(xk_re), // Bus [26 : 0] 
+	.xk_im(xk_im)); // Bus [26 : 0] 
 
 // INST_TAG_END ------ End INSTANTIATION Template ---------
 
