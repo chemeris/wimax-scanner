@@ -55,8 +55,6 @@ component ifft
 	xn_im: IN std_logic_VECTOR(adc_width - 1 downto 0);
 	fwd_inv: IN std_logic;
 	fwd_inv_we: IN std_logic;
---	scale_sch: IN std_logic_VECTOR(9 downto 0);
---	scale_sch_we: IN std_logic;
 	rfd: OUT std_logic;
 	xn_index: OUT std_logic_VECTOR(9 downto 0);
 	busy: OUT std_logic;
@@ -74,7 +72,7 @@ constant cp_max_log : integer := 7;
 constant adc_max_bit : integer := adc_width-1;
 constant adc_max_bit_bdl : integer := 2*adc_width-1;
 constant Ts_samples : integer := fft_len + cp_len;  --full OFDMA symbol time, samples
-
+constant preamble_count: integer := 114; -- count of preambles
 
 
 -- Input from ADC
@@ -82,20 +80,33 @@ type symbol_buf_type is array (0 to Ts_samples - 1) of std_ulogic_vector(15 down
 signal in_buf_re, in_buf_im : symbol_buf_type;
 
 -- FFT
-signal start, fwd_inv, fwd_inv_we, scale_sch_we, rfd, busy, edone, done, dv  : std_logic;
-signal scale_sch, xn_index, xk_index : std_logic_VECTOR(9 downto 0);
+signal start, fwd_inv, fwd_inv_we, rfd, busy, edone, done, dv  : std_logic;
+signal xn_index, xk_index : std_logic_VECTOR(9 downto 0);
 signal xk_re, xk_im : std_logic_VECTOR(26 downto 0);
 signal sclr: std_logic;
-
-signal in_buf_freq  : symbol_buf_type;
-signal in_buf_freq_en_a, in_buf_freq_wr, in_buf_freq_en_b : std_logic;
-signal in_buf_freq_adr_wr, in_buf_freq_adr_rd, count  : std_logic_VECTOR(10 downto 0):="00000000000";
-signal data_fft : std_logic_vector(31 downto 0);
 signal xn_re: std_logic_VECTOR(adc_width - 1 downto 0);
 signal xn_im: std_logic_VECTOR(adc_width - 1 downto 0);
---signal start_fft : std_logic;
 signal takt : integer  := 0;
 signal count_cp_pos : integer:=0; -- must be range (fft_len - 1) to 0
+
+-- Array of input signal after FFT
+type symbol_freq_type is array (0 to Ts_samples - 1) of std_ulogic_vector(26 downto 0);
+signal symb_freq_re, symb_freq_im  : symbol_freq_type;
+signal symb_freq_en_a, symb_freq_wr, symb_freq_en_b : std_logic;
+signal symb_freq_adr_wr, symb_freq_adr_rd  : std_logic_VECTOR(9 downto 0):="0000000000";
+signal data_fft_re, data_fft_im : std_ulogic_vector(26 downto 0);
+
+type preamble_sum_type is array (0 to preamble_count - 1) of signed(36 downto 0);
+signal preamble_sum : preamble_sum_type;
+signal preamble_nibble : std_logic_vector(3 downto 0); -- byte from array of preambles
+signal preamble_adr : integer:=0; -- number of byte from array of preambles (from 0 to 4103)
+signal preamble_N : integer:=0; -- preamble index (from 0 to 113)
+signal preamble : std_logic_vector(3 downto 0); -- octet of preamble
+signal count_shift : std_logic_vector(1 downto 0); -- counter of shift register for preamble
+signal load_shift : std_logic; -- load enable for shift register
+type preamble_stages_type is (INIT,to_31,to_63,to_95,seg0_96_113,seg1_96_113,seg2_96_113);
+signal preamble_stages : preamble_stages_type:=INIT;
+signal preamble_nibble_N : integer:=0; -- number of curent nibble;
 
 -- Find frame
 --   Convolution calculation
@@ -118,8 +129,6 @@ ifft_instance : ifft
 			xn_im => xn_im,
 			fwd_inv => fwd_inv,
 			fwd_inv_we => fwd_inv_we,
---			scale_sch => scale_sch,
---			scale_sch_we => scale_sch_we,
 			rfd => rfd,
 			xn_index => xn_index,
 			busy => busy,
@@ -130,31 +139,6 @@ ifft_instance : ifft
 			xk_re => xk_re,
 			xk_im => xk_im);
 
-
-
-process (adc_clk)
-begin
-   if rising_edge(adc_clk) then
-	if(rst = '0') then
-      if (in_buf_freq_en_a = '1') then
-         if (in_buf_freq_wr = '1') then
-            in_buf_freq(conv_integer(in_buf_freq_adr_wr)) <= To_StdULogicVector(xk_re & xk_im);
-         end if;
-      end if;
-	end if;
-   end if;
-end process;
-
-process (clk)
-begin
-   if rising_edge(clk) then
-	if(rst = '0') then
-      if (in_buf_freq_en_b = '1') then
-         data_fft <= To_StdLogicVector(in_buf_freq(conv_integer(in_buf_freq_adr_rd)));
-      end if;
-	end if;
-   end if;
-end process;
 
 
 process(adc_clk)
@@ -217,13 +201,7 @@ begin
 			conv_mult_re(i)<=conv_mult_re(i+1);
 			conv_mult_im(i)<=conv_mult_im(i+1);
 		end loop;
-		
-		
---	if(done = '1') then 
---		in_buf_freq_en_a <= '1'; in_buf_freq_wr <= '1';
---	else
---		in_buf_freq_en_a <= '0'; in_buf_freq_wr <= '0';
---	end if;
+
   end if;
   end if;
 end process;
@@ -238,8 +216,6 @@ begin
 		start <= '0';
 		fwd_inv_we <= '0';
 		fwd_inv <= '1'; --  '1' - FFT, '0' - IFFT
-		scale_sch <=  "0110001110";
-		scale_sch_we <= '0';
 		xn_re <= (others => '0');
 		xn_im <= (others => '0');
 	else
@@ -253,8 +229,6 @@ begin
 			count_cp_pos <= 1;
 			fwd_inv_we <= '1';
 			fwd_inv <= '1'; --  '1' - FFT, '0' - IFFT
-			scale_sch <=  "1010101011";
-			scale_sch_we <= '1';
 		else
 			sclr <= '0';
 			if (rfd = '1') then start <= '0'; end if;-- end of calculate FFT
@@ -280,6 +254,151 @@ begin
 		
 	end if;
    end if;
+end process;
+
+-- Write input signal after FFT into memory
+process (clk)
+begin
+   if rising_edge(clk) then
+	if(rst = '0') then
+      if (symb_freq_en_a = '1') then
+         if (symb_freq_wr = '1') then
+            symb_freq_re(conv_integer(symb_freq_adr_wr)) <= To_StdULogicVector(xk_re);
+         end if;
+      end if;
+	end if;
+   end if;
+end process;
+process (clk)
+begin
+   if rising_edge(clk) then
+	if(rst = '0') then
+      if (symb_freq_en_a = '1') then
+         if (symb_freq_wr = '1') then
+            symb_freq_im(conv_integer(symb_freq_adr_wr)) <= To_StdULogicVector(xk_im);
+         end if;
+      end if;
+	end if;
+   end if;
+end process;
+-- Read input signal after FFT from memory
+process (clk)
+begin
+   if rising_edge(clk) then
+	if(rst = '0') then
+      if (symb_freq_en_b = '1') then
+         data_fft_re <= symb_freq_re(conv_integer(symb_freq_adr_rd));
+      end if;
+	end if;
+   end if;
+end process;
+process (clk)
+begin
+   if rising_edge(clk) then
+	if(rst = '0') then
+      if (symb_freq_en_b = '1') then
+         data_fft_im <= symb_freq_im(conv_integer(symb_freq_adr_rd));
+      end if;
+	end if;
+   end if;
+end process;
+
+symb_freq_en_a <= '1'; symb_freq_en_b <= '1';
+symb_freq_wr <= dv;
+symb_freq_adr_wr <= xk_index+512;
+
+process (clk)
+begin
+if rising_edge(clk) then
+	preamble_nibble <= preambles_rom(conv_integer(preamble_adr));
+end if;
+end process;
+
+process (clk)
+begin
+if rising_edge(clk) then
+	if(rst = '1') then
+		for i in 0 to (preamble_count - 1) loop --count of preambles. must be in variables!
+			preamble_sum(i) <= (others => '0');
+		end loop;
+	elsif(preamble_stages /= INIT) then
+		if (preamble(3) = '1') then
+			preamble_sum(preamble_N) <= preamble_sum(preamble_N) - signed(data_fft_re);
+		else
+			preamble_sum(preamble_N) <= preamble_sum(preamble_N) + signed(data_fft_re);
+		end if;
+	end if;
+end if;
+end process;
+
+process (clk)
+begin
+if rising_edge(clk) then
+	if(rst = '1') then
+		count_shift <= (others => '0');
+		preamble <= (others => '0');
+	else
+		if (load_shift = '1') then
+			-- load register
+				preamble <= preamble_nibble (3 downto 0);
+				count_shift <=(others => '0');
+		else
+			-- shift register
+			preamble <= preamble(2 downto 0) & '0';
+			count_shift <=  count_shift + 1;
+		end if;
+		
+	end if;
+end if;
+end process;
+
+process (clk)
+begin
+if rising_edge(clk) then
+	if(rst = '1') then
+		load_shift <= '1';
+		preamble_adr <= 0;
+		symb_freq_adr_rd <= (others => '0');
+	else
+		case (preamble_stages) is
+			when INIT => if(dv = '1' and symb_freq_adr_wr = 100) then
+								preamble_stages <= to_31;
+								symb_freq_adr_rd <= symb_freq_adr_rd + 3;
+								load_shift<= '0';	
+ 							 else
+								load_shift<= '1';
+								symb_freq_adr_rd <= (others => '0');
+								preamble_adr <= 0;
+								preamble_nibble_N <= 0;
+								preamble_N <= 0;
+							 end if;
+			when to_31 =>  
+							if (count_shift = "01") then
+								preamble_nibble_N <= preamble_nibble_N + 1;
+								preamble_adr <= preamble_adr + 1;
+								if(preamble_nibble_N = 70) then preamble_N <= preamble_N + 1; preamble_nibble_N <= 0; end if;
+							end if;
+							if (count_shift = "10") then
+								load_shift<= '1';
+							else
+								load_shift<= '0';
+							end if;
+							if(symb_freq_adr_rd = 509) then
+								symb_freq_adr_rd <= symb_freq_adr_rd + 6;
+							else
+								symb_freq_adr_rd <= symb_freq_adr_rd + 3;
+							end if;
+			
+							if(preamble_N=31 and preamble_adr=70 and count_shift = "11") then preamble_stages <= to_63; end if;
+			when to_63 => 
+			when to_95 =>
+			when seg0_96_113 => 	
+			when seg1_96_113 => 
+			when seg2_96_113 => 			
+			when others => null;
+		end case;
+	end if;
+end if;
 end process;
 
 end Behavioral;
