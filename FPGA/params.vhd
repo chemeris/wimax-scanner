@@ -31,12 +31,11 @@ package params is
 constant  cp_len : integer := 128;    -- cyclic prefix length, samples
 constant  fft_len : integer := 1024;  -- size of the FFT
 constant  adc_width : integer := 16;   -- ADC resolution
-constant  N_cycles  : integer := 5;   -- result of dividing global frequency on frequency of ADC
+constant  N_cycles  : integer := 5;   -- FPGA frequency divided by ADC frequency
 
 -- ROM with preambles
-type rom_type is array (8093 downto 0) of std_logic_vector (3 downto 0);                 
+type rom_type is array (0 to 8093) of std_logic_vector (3 downto 0);                 
 signal preambles_rom : rom_type:= (                       
--- need inverse data...
 -- IDcell 0   Segment 0
 x"A",x"6",x"F",x"2",x"9",x"4",x"5",x"3",x"7",x"B",x"2",x"8",x"5",x"E",x"1",x"8",x"4",x"4",x"6",x"7",x"7",x"D",x"1",x"3",x"3",x"E",x"4",x"D",x"5",x"3",x"C",x"C",x"B",x"1",x"F",x"1",
 x"8",x"2",x"D",x"E",x"0",x"0",x"4",x"8",x"9",x"E",x"5",x"3",x"E",x"6",x"B",x"6",x"E",x"7",x"7",x"0",x"6",x"5",x"C",x"7",x"E",x"E",x"7",x"D",x"0",x"A",x"D",x"B",x"E",x"A",x"F",

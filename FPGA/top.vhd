@@ -72,7 +72,7 @@ constant cp_max_log : integer := 7;
 constant adc_max_bit : integer := adc_width-1;
 constant adc_max_bit_bdl : integer := 2*adc_width-1;
 constant Ts_samples : integer := fft_len + cp_len;  --full OFDMA symbol time, samples
-constant preamble_count: integer := 114; -- count of preambles
+constant preamble_count: integer := 114; -- number of preambles
 
 
 -- Input from ADC
@@ -97,7 +97,7 @@ signal symb_freq_adr_wr, symb_freq_adr_rd  : std_logic_VECTOR(9 downto 0):="0000
 signal data_fft_re, data_fft_im : std_ulogic_vector(26 downto 0);
 
 type preamble_sum_type is array (0 to preamble_count - 1) of signed(36 downto 0);
-signal preamble_sum : preamble_sum_type;
+signal preamble_sum_re, preamble_sum_im : preamble_sum_type;
 signal preamble_nibble : std_logic_vector(3 downto 0); -- byte from array of preambles
 signal preamble_adr : integer:=0; -- number of byte from array of preambles (from 0 to 4103)
 signal preamble_N : integer:=0; -- preamble index (from 0 to 113)
@@ -319,13 +319,38 @@ begin
 if rising_edge(clk) then
 	if(rst = '1') then
 		for i in 0 to (preamble_count - 1) loop --count of preambles. must be in variables!
-			preamble_sum(i) <= (others => '0');
+			preamble_sum_re(i) <= (others => '0');
 		end loop;
 	elsif(preamble_stages /= INIT) then
-		if (preamble(3) = '1') then
-			preamble_sum(preamble_N) <= preamble_sum(preamble_N) - signed(data_fft_re);
+		if (symb_freq_adr_rd = 515 and preamble_stages=to_31) then
+			null;
 		else
-			preamble_sum(preamble_N) <= preamble_sum(preamble_N) + signed(data_fft_re);
+			if (preamble(3) = '1') then
+				preamble_sum_re(preamble_N) <= preamble_sum_re(preamble_N) - signed(data_fft_re);
+			else
+				preamble_sum_re(preamble_N) <= preamble_sum_re(preamble_N) + signed(data_fft_re);
+			end if;
+		end if;
+	end if;
+end if;
+end process;
+
+process (clk)
+begin
+if rising_edge(clk) then
+	if(rst = '1') then
+		for i in 0 to (preamble_count - 1) loop --count of preambles. must be in variables!
+			preamble_sum_im(i) <= (others => '0');
+		end loop;
+	elsif(preamble_stages /= INIT) then
+		if (symb_freq_adr_rd = 515 and preamble_stages=to_31) then
+			null;
+		else
+			if (preamble(3) = '1') then
+				preamble_sum_im(preamble_N) <= preamble_sum_im(preamble_N) - signed(data_fft_im);
+			else
+				preamble_sum_im(preamble_N) <= preamble_sum_im(preamble_N) + signed(data_fft_im);
+			end if;
 		end if;
 	end if;
 end if;
@@ -361,13 +386,13 @@ if rising_edge(clk) then
 		symb_freq_adr_rd <= (others => '0');
 	else
 		case (preamble_stages) is
-			when INIT => if(dv = '1' and symb_freq_adr_wr = 100) then
+			when INIT => if(dv = '1' and symb_freq_adr_wr = 430) then
 								preamble_stages <= to_31;
 								symb_freq_adr_rd <= symb_freq_adr_rd + 3;
 								load_shift<= '0';	
  							 else
 								load_shift<= '1';
-								symb_freq_adr_rd <= (others => '0');
+								symb_freq_adr_rd <= conv_std_logic_vector(86,10);
 								preamble_adr <= 0;
 								preamble_nibble_N <= 0;
 								preamble_N <= 0;
@@ -376,19 +401,23 @@ if rising_edge(clk) then
 							if (count_shift = "01") then
 								preamble_nibble_N <= preamble_nibble_N + 1;
 								preamble_adr <= preamble_adr + 1;
-								if(preamble_nibble_N = 70) then preamble_N <= preamble_N + 1; preamble_nibble_N <= 0; end if;
+								
+							end if;
+							if(count_shift = "11" and preamble_nibble_N = 71) then 
+									preamble_N <= preamble_N + 1;--if () then
+									preamble_nibble_N <= 0;
 							end if;
 							if (count_shift = "10") then
 								load_shift<= '1';
 							else
 								load_shift<= '0';
 							end if;
-							if(symb_freq_adr_rd = 509) then
-								symb_freq_adr_rd <= symb_freq_adr_rd + 6;
+							if(preamble_nibble_N = 71 and count_shift = "10") then
+								symb_freq_adr_rd <= conv_std_logic_vector(86,10);
 							else
 								symb_freq_adr_rd <= symb_freq_adr_rd + 3;
 							end if;
-			
+								
 							if(preamble_N=31 and preamble_adr=70 and count_shift = "11") then preamble_stages <= to_63; end if;
 			when to_63 => 
 			when to_95 =>
