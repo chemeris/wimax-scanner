@@ -1,5 +1,4 @@
-function [bits] = FCH_demod(FCH_bits_interleaved_0, FCH_bits_interleaved_1, ...
-                            FCH_bits_interleaved_2,FCH_bits_interleaved_3)
+function [bits_best] = FCH_demod(num_repetitions, symbols_in)
 % Demodulate FCH into soft bits (unquantized real, negative for 1, positive for 0).
 % Copyright (C) 2011  Alexander Chemeris
 %
@@ -23,37 +22,30 @@ function [bits] = FCH_demod(FCH_bits_interleaved_0, FCH_bits_interleaved_1, ...
 %
 % Refer to "8.4.9.4 Modulation" and "8.4.9.5 Repetition" for details.
 
-% Number of bits in demodulated FCH
-FCH_demod_bits_bits_n = length(FCH_bits_interleaved_0)*2;
+% Number of bits in demodulated QPSK signal
+bits_n = length(symbols_in(1,:))*2;
 
 % Perform demodulation
-FCH_demod_bits = zeros(4, FCH_demod_bits_bits_n);
-FCH_demod_bits(1,:) = demodulate_QPSK(FCH_bits_interleaved_0);
-FCH_demod_bits(2,:) = demodulate_QPSK(FCH_bits_interleaved_1);
-FCH_demod_bits(3,:) = demodulate_QPSK(FCH_bits_interleaved_2);
-FCH_demod_bits(4,:) = demodulate_QPSK(FCH_bits_interleaved_3);
-
+bits = zeros(num_repetitions, bits_n);
+for j=1:num_repetitions
+    bits(j,:) = demodulate_QPSK(symbols_in(j,:));
+end
 clear h ;
 
-[~, max_idx] = max(abs(FCH_demod_bits));
-FCH_demod_bits_best = zeros(1, FCH_demod_bits_bits_n);
-for j=1:FCH_demod_bits_bits_n
-    FCH_demod_bits_best(j) = FCH_demod_bits(max_idx(j), j);
+[~, max_idx] = max(abs(bits));
+bits_best = zeros(1, bits_n);
+for j=1:bits_n
+    bits_best(j) = bits(max_idx(j), j);
 end
 clear max_val max_idx j ;
-
-%FCH_demod_bits_best_hard = double(FCH_demod_bits_best<0);
-%FCH_demod_bits_best_hard = FCH_demod_bits_best_hard(end:-1:1);
-
-bits = FCH_demod_bits_best;
 
 % Plot
 if 1
 figure ; hold on ; 
-plot(FCH_demod_bits(1,:), 'r.-');
-plot(FCH_demod_bits(2,:), 'g.-');
-plot(FCH_demod_bits(3,:), 'b.-');
-plot(FCH_demod_bits(4,:), 'c.-');
-plot(FCH_demod_bits_best, 'ko-', 'LineWidth',2);
-hold off ; grid on ; title('FCH soft symbols (4 repetitions and the best curve)');
+colors = ['r', 'g', 'b', 'c'];
+for j=1:num_repetitions
+    plot(bits(j,:), 'Color', colors(j), 'Marker', '.');
+end
+plot(bits_best, 'ko-', 'LineWidth',2);
+hold off ; grid on ; title('Soft symbols (repetitions and the best curve)');
 end

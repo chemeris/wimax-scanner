@@ -52,6 +52,8 @@ params.N_sc_per_subchannel = 24;
 params.PermutationBase6 = [3,2,0,4,5,1];
 % PermutationBase4 (for 4 subchannels)
 params.PermutationBase4 = [3,0,2,1];
+% Number of repetitions for FCH
+params.FCH_repetitions = 4;
 
 % Derived parameters
 params.Fs = round(params.BW*params.n);    % Sampling frequency
