@@ -1,3 +1,0 @@
-vhdl work "ipcore_dir/ifft.vhd"
-vhdl work "top.vhd"
-vhdl work "top_tb.vhd"

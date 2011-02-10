@@ -32,6 +32,8 @@ constant  cp_len : integer := 128;    -- cyclic prefix length, samples
 constant  fft_len : integer := 1024;  -- size of the FFT
 constant  adc_width : integer := 16;   -- ADC resolution
 constant  N_cycles  : integer := 5;   -- FPGA frequency divided by ADC frequency
+constant Ts_samples : integer := fft_len + cp_len;  --full OFDMA symbol time, samples
+constant preamble_count: integer := 114; -- number of preambles
 
 -- ROM with preambles
 type rom_type is array (0 to 8093) of std_logic_vector (3 downto 0);                 
