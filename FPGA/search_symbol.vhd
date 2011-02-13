@@ -19,12 +19,12 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+--use IEEE.STD_LOGIC_ARITH.ALL;
+--use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
@@ -37,12 +37,12 @@ entity search_symbol is
 Port 	 ( clk : in  STD_LOGIC;				-- global clock
 			adc_clk : in STD_LOGIC;			-- clock of ADC
 			rst: IN std_logic;
-			adc_re : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0);    -- I input from ADC
-			adc_im : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0);	  -- Q input from ADC
+			adc_re : in  std_logic_vector (adc_width - 1 downto 0);    -- I input from ADC
+			adc_im : in  std_logic_vector (adc_width - 1 downto 0);	  -- Q input from ADC
 			dv_fft: OUT std_logic;
-			xk_index: OUT std_logic_VECTOR(9 downto 0);
-         xk_re: OUT std_logic_VECTOR(26 downto 0);
-			xk_im: OUT std_logic_VECTOR(26 downto 0)
+			xk_index: OUT std_logic_vector(9 downto 0);
+         xk_re: OUT std_logic_vector(26 downto 0);
+			xk_im: OUT std_logic_vector(26 downto 0)
 			);
 end search_symbol;
 
@@ -77,15 +77,15 @@ constant adc_max_bit_bdl : integer := 2*adc_width-1;
 
 
 -- Input from ADC
-type symbol_buf_type is array (0 to Ts_samples - 1) of std_ulogic_vector(15 downto 0);
+type symbol_buf_type is array (0 to Ts_samples - 1) of signed(15 downto 0);
 signal in_buf_re, in_buf_im : symbol_buf_type;
 
 -- FFT
 signal start, fwd_inv, fwd_inv_we, rfd, busy, edone, done  : std_logic;
-signal xn_index : std_logic_VECTOR(9 downto 0);
+signal xn_index : std_logic_vector(9 downto 0);
 signal sclr: std_logic;
-signal xn_re: std_logic_VECTOR(adc_width - 1 downto 0);
-signal xn_im: std_logic_VECTOR(adc_width - 1 downto 0);
+signal xn_re: std_logic_vector(adc_width - 1 downto 0);
+signal xn_im: std_logic_vector(adc_width - 1 downto 0);
 signal takt : integer  := 0;
 signal count_cp_pos : integer:=0; -- must be range (fft_len - 1) to 0
 
@@ -95,7 +95,7 @@ type conv_mult_cp_type is array (0 to cp_max) of signed(adc_max_bit_bdl downto 0
 signal conv_mult_re, conv_mult_im : conv_mult_cp_type;
 signal conv_sum : signed(adc_max_bit_bdl+cp_max_log downto 0);
 --   Maximum search
-signal count_point, point_max, point_max_old : std_logic_VECTOR(15 downto 0):=x"0000";
+signal count_point, point_max, point_max_old : unsigned(15 downto 0):=x"0000";
 signal conv_sum_max : signed(adc_max_bit_bdl+cp_max_log downto 0);
 
 begin
@@ -146,15 +146,15 @@ begin
 		conv_sum_max <= (others => '0');
 	else
 		-- Handle counter.
-		if (conv_integer(count_point) < 55999) then
+		if (To_integer(count_point) < 55999) then
 			count_point <= count_point + 1;
 		else
 			count_point <= (others => '0');
 		end if;
 
 		-- Read new data from ADC
-		in_buf_re(Ts_samples - 1) <= To_StdULogicVector(adc_re);
-		in_buf_im(Ts_samples - 1) <= To_StdULogicVector(adc_im);
+		in_buf_re(Ts_samples - 1) <= signed(adc_re);
+		in_buf_im(Ts_samples - 1) <= signed(adc_im);
 		for i in 0 to (Ts_samples - 2) loop
 			in_buf_re(i)<=in_buf_re(i+1);
 			in_buf_im(i)<=in_buf_im(i+1);
@@ -204,8 +204,8 @@ begin
 			point_max_old <= point_max;
 			sclr <= '1';
 			start <= '1'; -- start for calculate FFT
-			xn_re <= To_StdLogicVector(in_buf_re(cp_max-1)); --load firths I point of symbol into fft block
-			xn_im <= To_StdLogicVector(in_buf_im(cp_max-1)); --load firths Q point of symbol into fft block
+			xn_re <= std_logic_vector(in_buf_re(cp_max-1)); --load firths I point of symbol into fft block
+			xn_im <= std_logic_vector(in_buf_im(cp_max-1)); --load firths Q point of symbol into fft block
 			count_cp_pos <= 1;
 			fwd_inv_we <= '1';
 			fwd_inv <= '1'; --  '1' - FFT, '0' - IFFT
@@ -216,8 +216,8 @@ begin
 		
 		if (rfd = '1') then
 			-- load data into fft block
-			xn_re <= To_StdLogicVector(in_buf_re(cp_max-1 + count_cp_pos + 1)); --load I point of symbol into fft block
-			xn_im <= To_StdLogicVector(in_buf_im(cp_max-1 + count_cp_pos + 1)); --load Q point of symbol into fft block
+			xn_re <= std_logic_vector(in_buf_re(cp_max-1 + count_cp_pos + 1)); --load I point of symbol into fft block
+			xn_im <= std_logic_vector(in_buf_im(cp_max-1 + count_cp_pos + 1)); --load Q point of symbol into fft block
 			
 			-- Calculating position of next point	
 			if (takt < (N_cycles - 1)) then

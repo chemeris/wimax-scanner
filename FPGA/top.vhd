@@ -20,12 +20,12 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+--use IEEE.STD_LOGIC_ARITH.ALL;
+--use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
@@ -69,10 +69,10 @@ end component;
 		in_fft_re : IN std_logic_vector(26 downto 0);
 		in_fft_im : IN std_logic_vector(26 downto 0);
 		symb_freq_en_b : IN std_logic;
-		symb_freq_adr_rd : IN std_logic_vector(9 downto 0);          
-		symb_freq_adr_wr : IN std_logic_vector(9 downto 0);
-		data_fft_re : OUT std_ulogic_vector(26 downto 0);
-		data_fft_im : OUT std_ulogic_vector(26 downto 0)
+		symb_freq_adr_rd : IN unsigned(9 downto 0);          
+		symb_freq_adr_wr : IN unsigned(9 downto 0);
+		data_fft_re : OUT signed(26 downto 0);
+		data_fft_im : OUT signed(26 downto 0)
 		);
 	END COMPONENT;
 	
@@ -81,11 +81,11 @@ end component;
 		clk : in  STD_LOGIC;				  -- global clock
 		rst : in  STD_LOGIC;				  -- reset signal
 		dv_fft: in std_logic;
-		preamble_N : out std_logic_VECTOR(6 downto 0); -- preamble of current frame
-		symb_freq_adr_rd : inout std_logic_VECTOR(9 downto 0):="0000000000"; -- address for read port
-		symb_freq_adr_wr : in std_logic_VECTOR(9 downto 0):="0000000000"; -- address for write port
-		data_fft_re : in std_ulogic_vector(26 downto 0);
-		data_fft_im : in std_ulogic_vector(26 downto 0)
+		preamble_N : out unsigned(6 downto 0); -- preamble of current frame
+		symb_freq_adr_rd : inout unsigned(9 downto 0):="0000000000"; -- address for read port
+		symb_freq_adr_wr : in unsigned(9 downto 0):="0000000000"; -- address for write port
+		data_fft_re : in signed(26 downto 0);
+		data_fft_im : in signed(26 downto 0)
 		);
 	END COMPONENT;
 	
@@ -97,11 +97,11 @@ signal xk_re, xk_im : std_logic_VECTOR(26 downto 0);
 -- Array of input signal after FFT
 
 signal symb_freq_en_a, symb_freq_wr, symb_freq_en_b : std_logic;
-signal symb_freq_adr_wr, symb_freq_adr_rd  : std_logic_VECTOR(9 downto 0):="0000000000";
-signal data_fft_re, data_fft_im : std_ulogic_vector(26 downto 0);
+signal symb_freq_adr_wr, symb_freq_adr_rd  : unsigned(9 downto 0):="0000000000";
+signal data_fft_re, data_fft_im : signed(26 downto 0);
 
 -- Searching correct preamble
-signal preamble_N : std_logic_VECTOR(6 downto 0); -- preamble of current frame
+signal preamble_N : unsigned(6 downto 0); -- preamble of current frame
 
 
 begin
@@ -147,7 +147,7 @@ Inst_search_preamble: search_preamble PORT MAP(
 
 symb_freq_en_a <= '1'; symb_freq_en_b <= '1';
 symb_freq_wr <= dv_fft;
-symb_freq_adr_wr <= xk_index+512;
+symb_freq_adr_wr <= unsigned(xk_index)+512;
 
 
 

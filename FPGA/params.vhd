@@ -23,7 +23,8 @@
 
 
 library IEEE;
-use IEEE.STD_LOGIC_1164.all;
+--use IEEE.STD_LOGIC_1164.all;
+use IEEE.NUMERIC_STD.ALL;
 
 package params is
 
@@ -36,7 +37,7 @@ constant Ts_samples : integer := fft_len + cp_len;  --full OFDMA symbol time, sa
 constant preamble_count: integer := 114; -- number of preambles
 
 -- ROM with preambles
-type rom_type is array (0 to 8093) of std_logic_vector (3 downto 0);                 
+type rom_type is array (0 to 8093) of unsigned (3 downto 0);                 
 signal preambles_rom : rom_type:= (                       
 -- IDcell 0   Segment 0
 x"A",x"6",x"F",x"2",x"9",x"4",x"5",x"3",x"7",x"B",x"2",x"8",x"5",x"E",x"1",x"8",x"4",x"4",x"6",x"7",x"7",x"D",x"1",x"3",x"3",x"E",x"4",x"D",x"5",x"3",x"C",x"C",x"B",x"1",x"F",x"1",
