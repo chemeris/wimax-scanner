@@ -28,11 +28,17 @@ read_2647
 search_preamble_corr
 [params.preamble_idx params.id_cell params.segment ] = ...
     detect_preamble(rcvdDL(theta:theta+params.Tb_samples-1), preamble_freq);
-equalize
-gen_subcarrier_prbs
+fprintf('Detected preamble %d (IDcell %d, segment %d)\n', params.preamble_idx, params.id_cell, params.segment);
 
 %% Find frame symbols
 search_syms
+
+%% Do pre demodulation subcarrier de-randomization of OFDM symbols 0 and 1
+sym_derand = DL0_derand(sym_fft, 10, params);
+
+%% Equalize OFDM symbols 0 and 1
+equalize_preamble
+sym_fft_eq = equalize_dl_pusc(sym_derand(1,:), sym_derand(2,:), params, err_vec_preamble);
 for k=1:2%length(sym_start)
 %    scatterplot(sym_fft(k,:))
 %    figure ; hold on ; plot(abs(fftshift(sym_fft(k,:)))); plot(abs(fftshift(1./err_vec)), 'r'); hold off
@@ -42,11 +48,8 @@ end
 % k=1 - pilot(2) (even)
 % k=2 - pilot(1) (odd)
 
-%% Do pre demodulation subcarrier de-randomization of OFDM symbols 0 and 1
-DL0_derand
-
 %% Extract FCH from OFDM symbols 0 and 1
-FCH_qpsk_symbols = get_slot_data(sym_derand, params.segment*10, ...
+FCH_qpsk_symbols = get_slot_data(sym_fft_eq, params.segment*10, ...
                                  params.FCH_repetitions, 2, params);
 %% Demodulate 4 repetitions of FCH into an array of (soft) bits
 FCH_demod_bits_best = FCH_demod(params.FCH_repetitions, FCH_qpsk_symbols);
