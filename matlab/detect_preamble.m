@@ -27,9 +27,16 @@ num_preambles = size(preamble_freq, 1);
 pr_corr = zeros(num_preambles, 1);
 sig_in_freq = fft(sig_in);
 for j = 1:num_preambles
-    pr_corr(j) = abs(sum(preamble_freq(j,:)'.*sig_in_freq));
+    pr_corr(j) = sum(preamble_freq(j,:)'.*sig_in_freq);
 end
 clear i sig_in_freq;
+
+% Different ways to get from complex values to real values.
+% We want the one which has decent performance and at the same time
+% minimal complexity.
+%pr_corr = abs(pr_corr);
+%pr_corr = real(pr_corr).*real(pr_corr) + imag(pr_corr).*imag(pr_corr);
+pr_corr = abs(real(pr_corr)) + abs(imag(pr_corr));
 
 %% Find preamble index
 [pr_corr_max PN_index] = max(pr_corr);
