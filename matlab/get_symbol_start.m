@@ -25,10 +25,18 @@ function [sym_start_diff max_corr corr] = get_symbol_start(sig_in, params)
 len = length(sig_in) - params.Ts_samples;
 corr = zeros(len,1);
 for i=1:len
-	corr(i) = sum( sig_in(i:i+params.Tg_samples) .* ...
-                   conj(sig_in(i+params.Tb_samples:i+params.Tb_samples+params.Tg_samples)) );
+    sig1 = sig_in(i:i+params.Tg_samples-1);
+    sig2 = sig_in(i+params.Tb_samples:i+params.Tb_samples+params.Tg_samples-1);
+	corr(i) = sum( sig1 .* conj(sig2) );
+    % This is a simplified version with 2 multiplications instead of
+    % 5 in the version above. Absolute value is almost the same, but this
+    % calculations does not give us angle shift and thus can't be used
+    % for simple CFO correction.
+%	corr(i) = sum( (real(sig1).*real(sig2)) + (imag(sig1).*imag(sig2)));
+%	corr(i) = sum( abs(real(sig1)+real(sig2)) + abs(imag(sig1)+imag(sig2)));
 end
 clear i len;
 
+
 % Timing and Fractioinal CFO
-[max_corr sym_start_diff] = max(abs(corr));
+[max_corr sym_start_diff] = max((corr));
