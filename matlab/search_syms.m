@@ -47,7 +47,5 @@ for k=1:sym_num
     sym_start(k) = sym_start_next;
     sym_data(k,:) = rcvdDL(sym_start_next:sym_start_next+params.Tb_samples-1);
     sym_fft(k,:) = fft(sym_data(k,:))';
-    % Equalize symbol
-    sym_fft_eq(k,:) = sym_fft(k,:) .* err_vec;
 end
 clear sym_start_next k sym_dt sym_num;
