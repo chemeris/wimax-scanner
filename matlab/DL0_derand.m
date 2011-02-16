@@ -1,3 +1,4 @@
+function [sym_derand] = DL0_derand(sym_fft, N_sym, params)
 % De-randomize subcarriers data before de-modulation (802.16e).
 % Copyright (C) 2011  Alexander Chemeris
 %
@@ -19,11 +20,14 @@
 % Refer to "8.4.9.4.1 Subcarrier randomization" of IEEE 802.16-2009 for
 % details.
 
-sym_derand = zeros(2, params.N_fft);
-for sym_n = 1:2
-    sym_pilots = mod(sym_n,2)+1;
+% Generate subcarrier_rand_seq_mod
+gen_subcarrier_prbs
 
-    sig_in = sym_fft_eq(sym_n,:);
+sym_derand = zeros(N_sym, params.N_fft);
+for sym_n = 1:N_sym
+%    sym_pilots = mod(sym_n,2)+1;
+
+    sig_in = sym_fft(sym_n,:);
     sig_in = fftshift(sig_in);
     sym_derand(sym_n,params.sc_first:params.sc_last) = ...
         sig_in(params.sc_first:params.sc_last) .* subcarrier_rand_seq_mod(sym_n,:);
