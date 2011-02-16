@@ -18,17 +18,26 @@
 
 % Note: Sample file is not provided because of unclear legality of this.
 
-F_file = 16e6;
+if 0
+    F_file = 16e6;
 
-fid = fopen('wimax_2647_16Msps_8.dat', 'rb');
-in = fread(fid, inf, 'int16');
-fclose(fid);
+    fid = fopen('wimax_2647_16Msps_8.dat', 'rb');
+    in = fread(fid, inf, 'int16');
+    fclose(fid);
 
-%rcvdDL_16k = 1i.*in(1001:2:end) + in(1002:2:end); 
-rcvdDL_16k = in(1001:2:end) + 1i.*in(1002:2:end); 
-rcvdDL = resample(rcvdDL_16k, params.Fs, F_file);
-clear in F_file fid;
-clear rcvdDL_16k;
+    %rcvdDL_16k = 1i.*in(1001:2:end) + in(1002:2:end); 
+    rcvdDL_16k = in(1001:2:end) + 1i.*in(1002:2:end); 
+    clear in fid;
+    rcvdDL = resample(rcvdDL_16k, params.Fs, F_file);
+    clear F_file rcvdDL_16k;
+else
+    fid = fopen('wimax_2647_11.2Msps_16.dat', 'rb');
+    in = fread(fid, 100e6, 'int16');
+    fclose(fid);
+
+    rcvdDL = in(1:2:end) + 1i.*in(2:2:end); 
+    clear in fid;
+end
 
 frame = rcvdDL(42705:77e3);
 %preamble = frame(1:1500);
