@@ -34,22 +34,35 @@ sig_in = rcvdDL(1+frame_delay:1+frame_delay+max_length); % Select samples
 % corr is an array of correlation (just for debug)
 [theta max_corr corr] = get_symbol_start(sig_in, params);
 % Plot timing
-figure; hold on ;
+figure; subplot(2,1,1); hold on ;
 plot(abs(corr)); % Plot abs(lambda) to find its maximum
-plot(theta, max_corr, 'ro');
+plot(theta, abs(max_corr), 'ro');
+hold off;
+subplot(2,1,2); hold on ;
+plot(abs(corr(theta-100:theta+100))); % Plot abs(lambda) to find its maximum
+plot(101, abs(max_corr), 'ro');
 hold off;
 
 % Skip Cyclic Prefix
 % Initially Theta points to the Cyclic Prefix start
 theta = theta + params.Tg_samples;
 
-% ==== Completely untested part start =====
-% Calculate fractional part of the Carrier Frequency Offset
-%cfo_fraq = -angle(corr(theta))/2/pi;
-% Compensate CFO
-%rcvdDL = rcvdDL * exp(-1i*(2*pi*cfo_fraq));
-% ==== Completely untested part end =====
-
 theta = theta+frame_delay;
+
+% ==== Completely untested part start =====
+%rcvdDL_save = rcvdDL;
+%   (1)
+% Calculate fractional part of the Carrier Frequency Offset
+cfo_fraq = -angle(corr(theta-frame_delay));
+% Compensate CFO
+%for k=1:numel(rcvdDL)
+%    rcvdDL(k) = rcvdDL(k) * exp(-1i*cfo_fraq/params.Tb_samples*k);
+%end
+%   (2)
+% Calculate fractional part of the Carrier Frequency Offset
+%cfo_fraq = conj(corr(theta-frame_delay)/abs(corr(theta-frame_delay)));
+% Compensate CFO
+%rcvdDL = rcvdDL * cfo_fraq;
+% ==== Completely untested part end =====
 
 clear max_length sig_in max_corr;
