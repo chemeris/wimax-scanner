@@ -23,7 +23,7 @@
 
 
 library IEEE;
---use IEEE.STD_LOGIC_1164.all;
+use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 
 package params is
@@ -32,7 +32,6 @@ package params is
 constant  cp_len : integer := 128;    -- cyclic prefix length, samples
 constant  fft_len : integer := 1024;  -- size of the FFT
 constant  adc_width : integer := 16;   -- ADC resolution
-constant  N_cycles  : integer := 5;   -- FPGA frequency divided by ADC frequency
 constant Ts_samples : integer := fft_len + cp_len;  --full OFDMA symbol time, samples
 constant preamble_count: integer := 114; -- number of preambles
 

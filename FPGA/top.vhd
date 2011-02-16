@@ -39,8 +39,7 @@ Port 	 ( clk : in  STD_LOGIC;				-- global clock
 			adc_clk : in STD_LOGIC;			-- clock of ADC
 			rst: IN std_logic;
 			adc_re : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0);    -- I input from ADC
-			adc_im : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0);	  -- Q input from ADC
-         data : out  STD_LOGIC_VECTOR (7 downto 0)
+			adc_im : in  STD_LOGIC_VECTOR (adc_width - 1 downto 0)	  -- Q input from ADC
 			);
 end top;
 
@@ -60,7 +59,7 @@ Port 	 ( clk : in  STD_LOGIC;				-- global clock
 end component;
 
 
-	COMPONENT in_mem
+	COMPONENT fft_mem
 	PORT(
 		clk : IN std_logic;
 		rst : IN std_logic;
@@ -120,7 +119,7 @@ port map (
 
 );
 
-	Inst_in_mem: in_mem PORT MAP(
+	Inst_fft_mem: fft_mem PORT MAP(
 		clk => clk,
 		rst => rst,
 		symb_freq_en_a => symb_freq_en_a,

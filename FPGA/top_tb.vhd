@@ -41,21 +41,17 @@ ARCHITECTURE behavior OF top_tb IS
          adc_clk : in  std_logic;
 			rst: IN std_logic;
          adc_re : IN  std_logic_vector(15 downto 0);
-         adc_im : IN  std_logic_vector(15 downto 0);
-         data : OUT  std_logic_vector(7 downto 0)
+         adc_im : IN  std_logic_vector(15 downto 0)
         );
     END COMPONENT;
     
 
    --Inputs
    signal clk : std_logic := '0';
+   signal adc_clk : std_logic := '0';
 	signal rst : std_logic := '0';
    signal adc_re : std_logic_vector(15 downto 0) := (others => '0');
    signal adc_im : std_logic_vector(15 downto 0) := (others => '0');
-
- 	--Outputs
-   signal adc_clk : std_logic;
-   signal data : std_logic_vector(7 downto 0);
 
 
 signal char_count: std_logic_vector(31 downto 0) := x"00000000";
@@ -72,8 +68,7 @@ BEGIN
 			 rst => rst,
           adc_clk => adc_clk,
           adc_re => adc_re,
-          adc_im => adc_im,
-          data => data
+          adc_im => adc_im
         );
 
    -- Clock process definitions
@@ -127,9 +122,9 @@ BEGIN
 					read (c_file_handle, C) ; adc_im(15 downto 8 ) <= conv_std_logic_vector(character'pos(C),8);
 					char_count <= char_count + 1;  -- Keep track of the number of characters
 				end if;
-				wait until adc_clk = '1';
+				wait until adc_clk = '0';
 			end if;
-			wait for 10 ns;
+--			wait for 10 ns;
         end loop;
         file_close(c_file_handle);
    end process;

@@ -48,6 +48,20 @@ end search_symbol;
 
 architecture Behavioral of search_symbol is
 
+component in_mem
+Port 	 ( clk : in  STD_LOGIC;				  -- global clock
+			in_RAM_en : in  STD_LOGIC; -- enable signal for RAM
+			in_RAM_wr : in  STD_LOGIC;   -- enable for write data
+ 			in_RAM_adr_wr : in unsigned(9 downto 0); -- address for write port
+			in_RAM_adr_rd_a : in unsigned(9 downto 0); -- address for read port for convolution
+			in_RAM_adr_rd_b : in unsigned(9 downto 0); -- address for read port for loading data into FFT block
+			adc_re : in  std_logic_vector (adc_width - 1 downto 0);    -- I input from ADC
+			adc_im : in  std_logic_vector (adc_width - 1 downto 0);	  -- Q input from ADC
+			in_RAM_re_out_a, in_RAM_im_out_a : out std_logic_vector (adc_width - 1 downto 0); -- I and Q channel for convolution
+			in_RAM_re_out_b, in_RAM_im_out_b : out std_logic_vector (adc_width - 1 downto 0) -- I and Q channel for loading data into FFT block
+		 );
+end component;
+
 component ifft
 	port (
 	clk: IN std_logic;
@@ -75,19 +89,12 @@ constant adc_max_bit : integer := adc_width-1;
 constant adc_max_bit_bdl : integer := 2*adc_width-1;
 
 
-
--- Input from ADC
-type symbol_buf_type is array (0 to Ts_samples - 1) of signed(15 downto 0);
-signal in_buf_re, in_buf_im : symbol_buf_type;
-
 -- FFT
 signal start, fwd_inv, fwd_inv_we, rfd, busy, edone, done  : std_logic;
 signal xn_index : std_logic_vector(9 downto 0);
 signal sclr: std_logic;
 signal xn_re: std_logic_vector(adc_width - 1 downto 0);
 signal xn_im: std_logic_vector(adc_width - 1 downto 0);
-signal takt : integer  := 0;
-signal count_cp_pos : integer:=0; -- must be range (fft_len - 1) to 0
 
 -- Find frame
 --   Convolution calculation
@@ -95,10 +102,38 @@ type conv_mult_cp_type is array (0 to cp_max) of signed(adc_max_bit_bdl downto 0
 signal conv_mult_re, conv_mult_im : conv_mult_cp_type;
 signal conv_sum : signed(adc_max_bit_bdl+cp_max_log downto 0);
 --   Maximum search
-signal count_point, point_max, point_max_old : unsigned(15 downto 0):=x"0000";
+signal count_point, count_point_old : unsigned(15 downto 0):=x"0000";
 signal conv_sum_max : signed(adc_max_bit_bdl+cp_max_log downto 0);
 
+-- Input from ADC
+signal in_RAM_en : std_logic;
+signal in_RAM_wr : std_logic;
+signal in_RAM_adr_wr : unsigned(9 downto 0);
+signal in_RAM_adr_rd_a : unsigned(9 downto 0);
+signal in_RAM_adr_rd_b : unsigned(9 downto 0);
+signal in_RAM_re_out_a, in_RAM_re_out_b : std_logic_vector (adc_width - 1 downto 0);
+signal in_RAM_im_out_a, in_RAM_im_out_b : std_logic_vector (adc_width - 1 downto 0);
+
+type stage_type is (INIT,WORK);
+signal stage : stage_type := INIT;
+
 begin
+
+in_mem_instance : in_mem
+		port map (
+		   clk => clk,
+			in_RAM_en => in_RAM_en,
+			in_RAM_wr => in_RAM_wr,
+ 			in_RAM_adr_wr => in_RAM_adr_wr,
+			in_RAM_adr_rd_a => in_RAM_adr_rd_a,
+			in_RAM_adr_rd_b => in_RAM_adr_rd_b,
+			adc_re => adc_re,
+			adc_im => adc_im,
+			in_RAM_re_out_a => in_RAM_re_out_a,
+			in_RAM_im_out_a => in_RAM_im_out_a, 
+			in_RAM_re_out_b => in_RAM_re_out_b,
+			in_RAM_im_out_b => in_RAM_im_out_b 
+		 );
 
 ifft_instance : ifft
 		port map (
@@ -120,19 +155,34 @@ ifft_instance : ifft
 			xk_im => xk_im);
 
 
-
 process(adc_clk)
+begin
+if rising_edge(adc_clk) then
+	if(rst = '1') then
+	-- Do nothing if Reset is high.
+		count_point <= (others => '0');
+	--   Reset convolution calculation
+	else
+		-- Handle counter.
+		if (To_integer(count_point) < 55999) then
+			count_point <= count_point + 1;
+		else
+			count_point <= (others => '0');
+		end if;
+	end if;
+end if;
+end process;
+
+process(clk)
 variable conv_mult_re_var, conv_mult_im_var : signed(adc_max_bit_bdl downto 0);
 begin
-  if rising_edge(adc_clk) then
+if rising_edge(clk) then
 	if(rst = '1') then
 		-- Do nothing if Reset is high.
-		--   Reset input from ADC
-		for i in 0 to 1151 loop
-			in_buf_re(i)<=(others => '0');
-			in_buf_im(i)<=(others => '0');
-		end loop;
-
+		in_RAM_en <= '0';
+		in_RAM_wr <= '0';
+		in_RAM_adr_wr <= (others => '0');
+		in_RAM_adr_rd_a <= TO_UNSIGNED(1,10);
 		--   Reset convolution calculation
 		conv_mult_re_var := (others => '0');
 		conv_mult_im_var := (others => '0');
@@ -141,49 +191,41 @@ begin
 			conv_mult_re(i)<=(others => '0');
 			conv_mult_im(i)<=(others => '0');
 		end loop;
-		count_point <= (others => '0');
-		point_max <= (others => '0');
-		conv_sum_max <= (others => '0');
+
+		in_RAM_en <= '1';
+		stage <= INIT;
 	else
-		-- Handle counter.
-		if (To_integer(count_point) < 55999) then
-			count_point <= count_point + 1;
-		else
-			count_point <= (others => '0');
-		end if;
+	case stage is
+		when INIT => 
+							if (count_point_old /= count_point) then
+								count_point_old <= count_point;
+								in_RAM_wr <= '1';
+								in_RAM_adr_wr <= in_RAM_adr_wr + 1;
+								in_RAM_adr_rd_a <= in_RAM_adr_wr + 2;
+								stage <= WORK;
+							end if;
+		when WORK =>	stage <= INIT;
+							in_RAM_wr <= '0';
+			
+							-- Update convolution
+							conv_mult_re_var := signed(adc_re)*signed(in_RAM_re_out_a);
+							conv_mult_im_var := signed(adc_im)*signed(in_RAM_im_out_a);
 
-		-- Read new data from ADC
-		in_buf_re(Ts_samples - 1) <= signed(adc_re);
-		in_buf_im(Ts_samples - 1) <= signed(adc_im);
-		for i in 0 to (Ts_samples - 2) loop
-			in_buf_re(i)<=in_buf_re(i+1);
-			in_buf_im(i)<=in_buf_im(i+1);
-		end loop;
+							conv_sum <= conv_sum - conv_mult_re(0) - conv_mult_im(0)
+										+ conv_mult_re_var + conv_mult_im_var;
+			
+							conv_mult_re(cp_max) <= conv_mult_re_var;
+							conv_mult_im(cp_max) <= conv_mult_im_var;
+							for i in 0 to cp_max-1 loop
+								conv_mult_re(i)<=conv_mult_re(i+1);
+								conv_mult_im(i)<=conv_mult_im(i+1);
+							end loop;
 		
-		-- Find maximum in convolution values.
-		if (conv_sum > conv_sum_max) then
-			conv_sum_max <= conv_sum;
-			
-			-- FIXME:: This hardcoded delay MUST be somehow calculated or
-			--         better described!
-			point_max <= count_point - fft_len - 1;
-			
-		end if;
-
-		-- Update convolution
-		conv_mult_re_var := signed(in_buf_re(cp_max))*signed(in_buf_re(cp_max+fft_len));
-		conv_mult_im_var := signed(in_buf_im(cp_max))*signed(in_buf_im(cp_max+fft_len));
-		conv_mult_re(cp_max) <= conv_mult_re_var;
-		conv_mult_im(cp_max) <= conv_mult_im_var;
-		conv_sum <= conv_sum - conv_mult_re(0) - conv_mult_im(0)
- 		          + conv_mult_re_var + conv_mult_im_var;
-		for i in 0 to cp_max-1 loop
-			conv_mult_re(i)<=conv_mult_re(i+1);
-			conv_mult_im(i)<=conv_mult_im(i+1);
-		end loop;
-
-  end if;
-  end if;
+		when others => null;
+	end case;
+	
+	end if;
+end if;
 end process;
 
 
@@ -198,44 +240,32 @@ begin
 		fwd_inv <= '1'; --  '1' - FFT, '0' - IFFT
 		xn_re <= (others => '0');
 		xn_im <= (others => '0');
+		in_RAM_adr_rd_b <= (others => '0');
+		conv_sum_max <= (others => '0');
 	else
-				--  Start calculating FFT
-      if (point_max /= point_max_old) then
-			point_max_old <= point_max;
+
+	-- Find maximum in convolution values and start calculating FFT
+		if (conv_sum > conv_sum_max) then
+			conv_sum_max <= conv_sum;
+								
 			sclr <= '1';
-			start <= '1'; -- start for calculate FFT
-			xn_re <= std_logic_vector(in_buf_re(cp_max-1)); --load firths I point of symbol into fft block
-			xn_im <= std_logic_vector(in_buf_im(cp_max-1)); --load firths Q point of symbol into fft block
-			count_cp_pos <= 1;
+			start <= '1'; -- start signal for calculate FFT
 			fwd_inv_we <= '1';
 			fwd_inv <= '1'; --  '1' - FFT, '0' - IFFT
+			in_RAM_adr_rd_b <= in_RAM_adr_rd_a;
+		
 		else
 			sclr <= '0';
-			if (rfd = '1') then start <= '0'; end if;-- end of calculate FFT
-		end if;
-		
-		if (rfd = '1') then
 			-- load data into fft block
-			xn_re <= std_logic_vector(in_buf_re(cp_max-1 + count_cp_pos + 1)); --load I point of symbol into fft block
-			xn_im <= std_logic_vector(in_buf_im(cp_max-1 + count_cp_pos + 1)); --load Q point of symbol into fft block
-			
-			-- Calculating position of next point	
-			if (takt < (N_cycles - 1)) then
-				takt <= takt + 1;
-			else 
-				takt <= 0;
-			end if;
-			if (takt /= 1) then count_cp_pos <= count_cp_pos + 1;	end if;
-			
-		else
-			takt <= 0;
-			count_cp_pos <= 0;
+			in_RAM_adr_rd_b <= in_RAM_adr_rd_b + 1;
+			xn_re <= in_RAM_re_out_b; --load I point of symbol into fft block
+			xn_im <= in_RAM_im_out_b; --load Q point of symbol into fft block
+			if (rfd = '1') then start <= '0'; end if;
 		end if;
-		
+
 	end if;
    end if;
 end process;
-
 
 end Behavioral;
 
