@@ -60,10 +60,14 @@ subcarrier_LN = 0:N_subcarriers-1;
 %% Subcarrier permuation.
 % Refer to "8.4.6.1.2.2.2 Partitioning of data subcarriers into subchannels
 % in DL FUSC"
+%
+% s is a subchannel number inside of the major group.
+s = mod(subchannel,10);
+if s>=6 ; s=s-6; end
 % n_k = (k + 13 * s) mod Nsubcarriers
-n_k = mod(subcarrier_LN+13*subchannel, N_subcarriers);
+n_k = mod(subcarrier_LN+13*s, N_subcarriers);
 % Subcarrier LN in major group (after permutation), in the range 0..143
-subcarrier_LN_permuted = N_subch_MG*n_k + mod(p_s(1+mod(n_k+subchannel, N_subch_MG)) + DL_PermBase, N_subch_MG);
+subcarrier_LN_permuted = N_subch_MG*n_k + mod(p_s(1+mod(n_k+s, N_subch_MG)) + DL_PermBase, N_subch_MG);
 
 %% Find cluster
 % Cluster Logical Number (within major group)
