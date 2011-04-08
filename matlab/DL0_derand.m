@@ -25,16 +25,20 @@ gen_subcarrier_prbs
 
 sym_derand = zeros(N_sym, params.N_fft);
 for sym_n = 1:N_sym
-%    sym_pilots = mod(sym_n,2)+1;
-
     sig_in = sym_fft(sym_n,:);
     sig_in = fftshift(sig_in);
     sym_derand(sym_n,params.sc_first:params.sc_last) = ...
         sig_in(params.sc_first:params.sc_last) .* subcarrier_rand_seq_mod(sym_n,:);
     % Plot pilots before de-randomization (blue) and after (red).
-    % After de-randomization all pilots should be positive.
-%    figure ; hold on
-%      plot(real(sig_in(pilot_shifted(sym_pilots,:))), 'b') ;
-%      plot(real(sym_derand(sym_n,pilot_shifted(sym_pilots,:))), 'r') ; hold off
+    % After de-randomization all pilots should be positive. But we apply
+    % this to non equalized data, so this is not true in general - pilots
+    % may drift from positive to negative and back following channel
+    % conditions.
+    if 0
+        figure ; hold on
+          sym_pilots = mod(sym_n,2)+1;
+          plot(real(sig_in(params.pilot_shifted(sym_pilots,:))), 'b') ;
+          plot(real(sym_derand(sym_n,params.pilot_shifted(sym_pilots,:))), 'r') ; hold off
+    end
 end
 clear sym_pilots sym_n sig_in;
