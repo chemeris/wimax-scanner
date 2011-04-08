@@ -44,7 +44,7 @@ for j=1:num_repetitions
 end
 
 % Plot I/Q data - all repetitions
-colors = ['r', 'g', 'b', 'k'];
+colors = ['r', 'g', 'b', 'k', 'c', 'y'];
 figure ; subplot(2,1,1) ; hold on
 for j=1:num_repetitions
     plot(real(symbols(j,:)), 'Color', colors(j), 'Marker', '.');
