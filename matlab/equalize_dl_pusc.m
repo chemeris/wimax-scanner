@@ -26,8 +26,8 @@ sp_err_even = 0.5 ./ sp_rx_even;
 sp_err_odd  = 0.5 ./ sp_rx_odd;
  
 %% Interpolate error voctor over all sub-carriers
-%method = 'spline';
-method = 'linear';
+method = 'spline';
+%method = 'linear';
 err_vec_even = interp1(params.pilot_shifted(2,:), sp_err_even, 1:length(sym_0), method); 
 err_vec_odd  = interp1(params.pilot_shifted(1,:), sp_err_odd,  1:length(sym_1), method); 
 err_vec_comb = interp1([params.pilot_shifted(1,:) params.pilot_shifted(2,:)],...
