@@ -33,6 +33,11 @@ convCode = poly2trellis(constLen, [G1 G2]);
 tbLen = length(data)/rateInv;
 % Decode two copies of the received block consecutively and select the
 % outputs from the second copy
-decoded = vitdec([data' ; data'], convCode, tbLen, 'trunc', type);
-decoded = decoded(tbLen+1:end, 1);
+
+%decoded = vitdec([data' ; data'], convCode, tbLen, 'trunc', type);
+%decoded = decoded(tbLen+1: end, 1);
+
+decoded = vitdec([data' ; data'; data'], convCode, tbLen, 'trunc', type);
+decoded = decoded(tbLen+1: tbLen*2, 1);
+
 

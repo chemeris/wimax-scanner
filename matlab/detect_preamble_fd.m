@@ -1,4 +1,4 @@
-function [preamble_idx, id_cell, segment] = detect_preamble(sig_in, preamble_freq)
+function [preamble_idx, id_cell, segment] = detect_preamble_fd(sig_in_freq_shifted, preamble_freq)
 % Determine 802.16e preamble index, IDcell and segment.
 % Copyright (C) 2011  Alexander Chemeris
 %
@@ -18,22 +18,22 @@ function [preamble_idx, id_cell, segment] = detect_preamble(sig_in, preamble_fre
 % USA
 
 % Refer to "8.4.6.1.1 Preamble" of IEEE 802.16-2009 for details.
-
+% same as detect_preamble but input is shifted result of FFT AO
 %% Detect preamble by correlation in frequency space.
 % Frequency space correlation gives us much better fidelity then
 % time space correlation.
 % TODO:: This could be greatly optimized knowing preambles structure.
 num_preambles = size(preamble_freq, 1);
 pr_corr = zeros(num_preambles, 1);
-sig_in_freq = fft(sig_in);
-sig_in_freq = sig_in_freq.*exp(1j*2*pi/1024*(128)/2*(1:1024)).'; 
+%sig_in_freq = fft(sig_in);
+%sig_in_freq = sig_in_freq.*exp(1j*2*pi/1024*(128)/2*(1:1024)).'; 
 % for j = 1:num_preambles
 %     pr_corr(j) = sum(preamble_freq(j,:)'.*sig_in_freq); %original version 
 % end
 
-% another metrics for preamble detection AO
+% another metrics for preamble detection
 for j = 1:num_preambles
-    t = preamble_freq(j,:)'.*sig_in_freq;  
+    t = fftshift(preamble_freq(j,:))'.*sig_in_freq_shifted;  
     t = reshape(t, 32, length(t)/32); 
     t = sum(t); 
     pr_corr(j) = sum( abs(t) );     
@@ -45,7 +45,7 @@ clear i sig_in_freq;
 % minimal complexity.
 %pr_corr = abs(pr_corr);
 %pr_corr = real(pr_corr).*real(pr_corr) + imag(pr_corr).*imag(pr_corr);
-pr_corr = abs(real(pr_corr)) + abs(imag(pr_corr));
+%pr_corr = abs(real(pr_corr)) + abs(imag(pr_corr));
 
 %% Find preamble index
 [pr_corr_max PN_index] = max(pr_corr);
@@ -61,7 +61,7 @@ end
 
 %% Optionally plot correlations for all preambles
 if 1
-figure(15); hold on
+figure(2); hold on
 plot(pr_corr, 'g')
 plot(PN_index, pr_corr_max, 'ro')
 hold off

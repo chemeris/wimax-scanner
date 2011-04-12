@@ -42,21 +42,22 @@ for j=1:num_repetitions
                 ofdm_syms(s+1,carriers+1);
     end
 end
-
-% Plot I/Q data - all repetitions
-colors = ['r', 'g', 'b', 'k', 'c', 'y'];
-figure ; subplot(2,1,1) ; hold on
-for j=1:num_repetitions
-    plot(real(symbols(j,:)), 'Color', colors(j), 'Marker', '.');
+if 0
+    % Plot I/Q data - all repetitions
+    colors = ['r', 'g', 'b', 'k', 'c', 'y'];
+    figure ; subplot(2,1,1) ; hold on
+    for j=1:num_repetitions
+        plot(real(symbols(j,:)), 'Color', colors(j), 'Marker', '.');
+    end
+    hold off
+    ylim([-1 1]) ; grid on ; title('FCH I values (all repetitions)');
+    subplot(2,1,2) ; hold on
+    for j=1:num_repetitions
+        plot(imag(symbols(j,:)), 'Color', colors(j), 'Marker', '.');
+    end
+    hold off
+    ylim([-1 1]) ; grid on ; title('FCH Q values (all repetitions)');
 end
-hold off
-ylim([-1 1]) ; grid on ; title('FCH I values (all repetitions)');
-subplot(2,1,2) ; hold on
-for j=1:num_repetitions
-    plot(imag(symbols(j,:)), 'Color', colors(j), 'Marker', '.');
-end
-hold off
-ylim([-1 1]) ; grid on ; title('FCH Q values (all repetitions)');
 
 %scatterplot(symbols(1,:)) ; xlim([-1 1]); ylim([-1 1])
 %scatterplot(symbols(2,:)) ; xlim([-1 1]); ylim([-1 1])
