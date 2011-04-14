@@ -92,13 +92,95 @@ if ~all(FCH_decoded(1:24) == FCH_decoded(25:48))
    fprintf('FCH decoding failed!');
 end
 
+
+
+
 % Estimate the number of incorrectly received bits by encoding FCH again
 % and counting the number of different bits.
 recode = encode_CC_tail_biting(FCH_decoded);
 FCH_errors = sum(xor(FCH_deinterleaved<0, recode'));
 fprintf(' SNRpilots = %f dB, Number of error bits in FCH: %d\n', SNR_pilots, FCH_errors);
 clear recode FCH_errors;
-pause(0.5);     
+    
+%% DL-MAP work
+DL_Map_Length     = bin2dec(sprintf('%d', FCH_decoded(13:20).'));
+DL_Map_Repetition = 2*bin2dec(sprintf('%d', FCH_decoded(8:9).'))
+
+if 1%DL_Map_Length==28
+    dl_map_qpsk = zeros(1, 48*DL_Map_Length/DL_Map_Repetition); 
+ %   PartA_Len = DL_Map_Length/4/4; % code rate 1/2, 4 repetitions
+%    PartA_qpsk = zeros(PartA_Len, 24*2); 
+%    PartB_qpsk = PartA_qpsk; 
+    
+    
+    j = 4; % index of first slot DL-MAP first slot after FCH
+    
+    for i = 1: DL_Map_Length/DL_Map_Repetition; 
+        t = get_slot_data(syms_fft_eq, j, DL_Map_Repetition, 2, params);
+        dl_map_qpsk(1+(i-1)*48: i*48) = sum(t); 
+       % PartA_qpsk(i,:) = sum(t); 
+       
+        j = j + DL_Map_Repetition;         
+        if( (j+DL_Map_Repetition-1) > 29 )
+            break; 
+        end
+    end
+    figure(11); 
+    plot(dl_map_qpsk, 'o'); 
+%     
+%     j = 4; 
+%     for i=1:PartA_Len
+%         t = get_slot_data(syms_fft_eq, j, 4, 2, params);
+%         PartA_qpsk(i,:) = sum(t); 
+%         j = j+4;         
+%     end
+%     
+%     
+%     for i=1:PartA_Len
+%         t = get_slot_data(syms_fft_eq, j, 4, 2, params);
+%         PartB_qpsk(i,:) = sum(t); 
+%         j = j+4;         
+%     end
+% % !!!!!!!!!!!! do not forget about conj !!!!!!!!        
+% %     figure(11); 
+% %     plot([reshape(PartA_qpsk,PartA_Len*48,1);  reshape(PartB_qpsk,PartA_Len*48,1)], '+'); 
+%     
+%     t = reshape( PartA_qpsk.', PartA_Len*48, 1).'; 
+%     PartA_bits = reshape([real(t)<0; imag(t)<0], PartA_Len*48*2, 1).';  
+% 
+%     t = reshape( PartB_qpsk.', PartA_Len*48, 1).'; 
+%     PartB_bits = reshape([real(t)<0; imag(t)<0], PartA_Len*48*2, 1).';  
+%     
+%     
+%     N = 192; m=6; J = 3; 
+%     tmp = subblock_interleaver((0:N-1), N, m, J); 
+%     [tmp, deintr_tab] =sort(tmp); 
+%     
+%     PartA_deintr = PartA_bits(deintr_tab); 
+%     PartB_deintr = PartB_bits(deintr_tab); 
+%     
+%     PartAB = zeros(1, PartA_Len*48*2*2); 
+%     
+%     PartAB(1:2:end) = PartA_deintr; 
+%     PartAB(2:2:end) = PartB_deintr; 
+%     
+%    dl_map_qpsk = conj(dl_map_qpsk); %!!!!!!!!!!! 
+    if(DL_Map_Length==28)        
+        % process first 4 slots
+        info = decode_DL_MAP_CTC(dl_map_qpsk( 1:48*4) ); 
+    else
+        info = decode_DL_MAP_CTC(dl_map_qpsk ); 
+    end
+    
+    fid = fopen('bit.txt', 'a'); 
+    fprintf(fid, '\n %02d: ',DL_Map_Length); 
+    fprintf(fid, '%d', info); 
+    fclose(fid); 
+    
+end
+
+pause(0.5); 
+
 end
 %frame_carrier_offset
 %q
