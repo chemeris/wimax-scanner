@@ -1,4 +1,4 @@
-% testbench OFDM system 
+% main script of testbench OFDM system 
 clear all
 set_params
 preambles

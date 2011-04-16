@@ -1,3 +1,28 @@
+% Copyright (C) 2011  Alexey Ostapenko
+%
+% This library is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public
+% License as published by the Free Software Foundation; either
+% version 2.1 of the License, or (at your option) any later version.
+%
+% This library is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+% Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public
+% License along with this library; if not, write to the Free Software
+% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+% USA
+% 
+%
+% The goal of this script is 
+% convert frame into frequency domain,
+% determine  of the preamble index, 
+% compensate  effects of the timing offset,
+% estimate the channel responce, 
+% equalization the OFDM symbols. 
+% The script is controlled structure "dem_params".
 
 
 p = dem_params.current_packet_start_pos; 

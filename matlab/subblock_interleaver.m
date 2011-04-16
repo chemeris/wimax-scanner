@@ -15,11 +15,12 @@
 % Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 % USA
 % 
-%
-% reference    8.4.9.2.3.4.2 Subblock interleaving
-% x - input LLRs, y - output
-%  N, m, J     - from table 505
+
 function y = subblock_interleaver(x, N, m, J)
+%function y = subblock_interleaver(x, N, m, J)
+% x - input LLRs, y - output
+% N, m, J     - from table 505
+% reference    8.4.9.2.3.4.2 Subblock interleaving
 
 % N = 96
 % x = (0:N-1); 

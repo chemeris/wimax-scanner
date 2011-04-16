@@ -15,10 +15,16 @@
 % Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 % USA
 % 
-% Preamble finder,  return position of first sample of preamble and
-% measured carrier frequency offset
+% Preamble finder,  return positions of first sample of preamble and
+% measured carrier frequency offset.
+% Uses the fact that the preamble is a sequence repeated three times (time
+% domain).
+
 
 function [frame_start_pos, frame_carrier_offset] = find_preamble(params, s)
+%function [frame_start_pos, frame_carrier_offset] = find_preamble(params,
+%s)
+% 
 frame_start_pos = []; 
 frame_carrier_offset = []; 
 

@@ -48,8 +48,9 @@ else
 end
 
 frame = rcvdDL(42705:77e3);
-%preamble = frame(1:1500);
 
-%figure ; spectrogram(frame, params.N_fft, 750, params.N_fft, params.Fs)
-%figure ; plot(abs(frame))
-%figure ; pwelch(frame, params.N_fft, 750, params.N_fft, params.Fs)
+if 0
+    figure ; spectrogram(frame, params.N_fft, 750, params.N_fft, params.Fs)
+    figure ; plot(abs(frame))
+    figure ; pwelch(frame, params.N_fft, 750, params.N_fft, params.Fs)
+end

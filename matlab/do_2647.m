@@ -17,7 +17,7 @@
 % USA
 
 
-figure(1); 
+
 %% Initialize - load preambles data, etc
 set_params
 preambles

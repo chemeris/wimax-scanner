@@ -26,12 +26,20 @@ function [preamble_idx, id_cell, segment] = detect_preamble(sig_in, preamble_fre
 num_preambles = size(preamble_freq, 1);
 pr_corr = zeros(num_preambles, 1);
 sig_in_freq = fft(sig_in);
-sig_in_freq = sig_in_freq.*exp(1j*2*pi/1024*(128)/2*(1:1024)).'; 
+
+%% this is needed for correct work with find_preamble .
+%this is NOT needed for work with search_preamble_corr.
+%sig_in_freq = sig_in_freq.*exp(1j*2*pi/1024*(128)/2*(1:1024)).'; 
+
+%% 
+% original version of metrics
 % for j = 1:num_preambles
 %     pr_corr(j) = sum(preamble_freq(j,:)'.*sig_in_freq); %original version 
 % end
 
-% another metrics for preamble detection AO
+% another metrics for preamble detection
+% this is more robust to influence of the timing offset and channel
+% responce
 for j = 1:num_preambles
     t = preamble_freq(j,:)'.*sig_in_freq;  
     t = reshape(t, 32, length(t)/32); 

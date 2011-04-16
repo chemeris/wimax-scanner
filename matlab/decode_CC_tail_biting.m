@@ -36,7 +36,7 @@ tbLen = length(data)/rateInv;
 
 %decoded = vitdec([data' ; data'], convCode, tbLen, 'trunc', type);
 %decoded = decoded(tbLen+1: end, 1);
-
+% possible it's improve performance of decoder
 decoded = vitdec([data' ; data'; data'], convCode, tbLen, 'trunc', type);
 decoded = decoded(tbLen+1: tbLen*2, 1);
 
