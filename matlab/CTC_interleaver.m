@@ -1,3 +1,5 @@
+% CTC interleaver. This is a part of 802.16e CTC encoder. 
+%
 % Copyright (C) 2011  Alexey Ostapenko
 %
 % This library is free software; you can redistribute it and/or
@@ -14,29 +16,27 @@
 % License along with this library; if not, write to the Free Software
 % Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 % USA
-% 8.4.9.2.3.2 CTC interleaver
+%
+% Refer to "8.4.9.2.3.2 CTC interleaver" of IEEE 802.16-2009 for details. 
 
 
 function y = CTC_interleaver(x, P)
-%function y = CTC_interleaver(x, P)
+% function y = CTC_interleaver(x, P)
 % x - row vector of input data,  
-%P = [P0,P1,P2,P3] from table 502
+% P = [P0,P1,P2,P3], the parameters of the interleaver, 
+% refer to the table 502 for more details 
 
-%% step 1
-% P = [13, 24, 0, 24]; 
-% x = (0:95)
-x0 = x; 
+%% Step 1: Switch alternate couples.
 N = length(x)/2; 
 
-t = reshape(x.', 2, N); 
-x = t; 
-t = [t(2,:); t(1,:)]; 
-
-x(:, 2:2:end,:) = t(:, 2:2:end);
+t = reshape(x.', 2, N); % make row vector of pairs
+x = t;  
+t = [t(2,:); t(1,:)];   % swap elements of pairs
+x(:, 2:2:end,:) = t(:, 2:2:end); % replace odd numbered pairs (counting from 0)
 
 x = reshape(x, N*2, 1).'; 
 
-%% step 2
+%% Step 2. Build the sequence permutation  for pairs
 ps = zeros(1, N); % the permutation sequence for pairs
 for j = 0:N-1
     switch (mod(j, 4))
@@ -47,23 +47,26 @@ for j = 0:N-1
     end    
 end
 
-ps2 = zeros(1, N*2); % the permutation sequence for bits
-ps2(1:2:end) = ps*2+1; % +1 for matlab indexing 
+ps2 = zeros(1, N*2);    % the permutation sequence for bits
+ps2(1:2:end) = ps*2+1;  % +1 for matlab indexing 
 ps2(2:2:end) = ps*2+1+1; 
 
 x = x(ps2);  
 
 
-%% swap   even numbered pairs. Is this really needed ?
-t = reshape(x.', 2, N); 
-x = t; 
-t = [t(2,:); t(1,:)]; 
+%% Swap elements of the even numbered pairs. This is like to step 1.
+% It is not clear whether it is in fact. Some mismatch observed between
+% definition of a sequence "u1" and sample of resulting sequence 
+% "u2 = [(BP(0), AP(0)), (AP(1), BP(1)), (BP(2), AP(2))..".
+% Refer to "8.4.9.2.3.2 CTC interleaver" of IEEE 802.16-2009
+% t = reshape(x.', 2, N); 
+% x = t; 
+% t = [t(2,:); t(1,:)]; 
+% x(:, 1:2:end,:) = t(:, 1:2:end);
+% y = reshape(x, N*2, 1).'; 
+% 
 
-x(:, 1:2:end,:) = t(:, 1:2:end);
-
-x = reshape(x, N*2, 1).'; 
-
-
+y = x;
 
 
 

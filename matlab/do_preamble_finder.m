@@ -1,6 +1,7 @@
 % main script of testbench OFDM system 
 clear all
 set_params
+set_CTC_params
 preambles
 pilots
 %test_carriers_permuter
@@ -41,7 +42,7 @@ for i = 1: length(frame_start_pos)
 % set estimated carrier offset    
     dem_params.current_packet_cfo = frame_carrier_offset(i);  
 % set number of OFDM symbols for processing     
-    dem_params.num_ofdm_syms = 2;
+    dem_params.num_ofdm_syms = 4;
 % tell demodulator try  to detect the preamble
 % if case dem_params.preamble_idx > 1 then detection of the preamble will
 % not be made
@@ -50,8 +51,10 @@ for i = 1: length(frame_start_pos)
 %  produce syms_fft_eq 
     demodulate_OFDM
 
-%% 
+%% Derandomization of the OFDM carriers
+
 syms_fft_eq = DL0_derand(syms_fft_eq, num_ofdm_syms, params);
+
 
 %% Extract FCH from OFDM symbols 0 and 1
 FCH_qpsk_symbols = get_slot_data(syms_fft_eq, params.segment*10, ...
@@ -104,72 +107,61 @@ clear recode FCH_errors;
     
 %% DL-MAP work
 DL_Map_Length     = bin2dec(sprintf('%d', FCH_decoded(13:20).'));
-DL_Map_Repetition = 2*bin2dec(sprintf('%d', FCH_decoded(8:9).'))
+DL_Map_Repetition = 2*bin2dec(sprintf('%d', FCH_decoded(8:9).'));
 
-if 1%DL_Map_Length==28
-    dl_map_qpsk = zeros(1, 48*DL_Map_Length/DL_Map_Repetition); 
- %   PartA_Len = DL_Map_Length/4/4; % code rate 1/2, 4 repetitions
-%    PartA_qpsk = zeros(PartA_Len, 24*2); 
-%    PartB_qpsk = PartA_qpsk; 
-    
-    
-    j = 4; % index of first slot DL-MAP first slot after FCH
-    
-    for i = 1: DL_Map_Length/DL_Map_Repetition; 
-        t = get_slot_data(syms_fft_eq, j, DL_Map_Repetition, 2, params);
-        dl_map_qpsk(1+(i-1)*48: i*48) = sum(t); 
-       % PartA_qpsk(i,:) = sum(t); 
-       
-        j = j + DL_Map_Repetition;         
-        if( (j+DL_Map_Repetition-1) > 29 )
-            break; 
-        end
-    end
-    figure(11); 
-    plot(dl_map_qpsk, 'o'); 
-%     
-%     j = 4; 
-%     for i=1:PartA_Len
-%         t = get_slot_data(syms_fft_eq, j, 4, 2, params);
-%         PartA_qpsk(i,:) = sum(t); 
-%         j = j+4;         
-%     end
-%     
-%     
-%     for i=1:PartA_Len
-%         t = get_slot_data(syms_fft_eq, j, 4, 2, params);
-%         PartB_qpsk(i,:) = sum(t); 
-%         j = j+4;         
-%     end
-% % !!!!!!!!!!!! do not forget about conj !!!!!!!!        
-% %     figure(11); 
-% %     plot([reshape(PartA_qpsk,PartA_Len*48,1);  reshape(PartB_qpsk,PartA_Len*48,1)], '+'); 
-%     
-%     t = reshape( PartA_qpsk.', PartA_Len*48, 1).'; 
-%     PartA_bits = reshape([real(t)<0; imag(t)<0], PartA_Len*48*2, 1).';  
-% 
-%     t = reshape( PartB_qpsk.', PartA_Len*48, 1).'; 
-%     PartB_bits = reshape([real(t)<0; imag(t)<0], PartA_Len*48*2, 1).';  
-%     
-%     
-%     N = 192; m=6; J = 3; 
-%     tmp = subblock_interleaver((0:N-1), N, m, J); 
-%     [tmp, deintr_tab] =sort(tmp); 
-%     
-%     PartA_deintr = PartA_bits(deintr_tab); 
-%     PartB_deintr = PartB_bits(deintr_tab); 
-%     
-%     PartAB = zeros(1, PartA_Len*48*2*2); 
-%     
-%     PartAB(1:2:end) = PartA_deintr; 
-%     PartAB(2:2:end) = PartB_deintr; 
-%     
-%    dl_map_qpsk = conj(dl_map_qpsk); %!!!!!!!!!!! 
-    if(DL_Map_Length==28)        
-        % process first 4 slots
-        info = decode_DL_MAP_CTC(dl_map_qpsk( 1:48*4) ); 
+%% Extracted and averaged QPSK characters that contain DL MAP
+dl_map_qpsk = zeros(1, 48*DL_Map_Length/DL_Map_Repetition);     
+i = 1; 
+j = 4; % Index of first slot DL-MAP (first slot after FCH), 
+       % only for segment 0! 
+t = zeros(DL_Map_Repetition, 48); 
+t_index = 1; 
+first_sym = 1; 
+while i<=DL_Map_Length/DL_Map_Repetition
+    % Collect DL_Map_Repetition of slots
+    t(t_index, :) = get_slot_data(syms_fft_eq(first_sym:first_sym+1,:), j, 1, 2, params);
+    if t_index==DL_Map_Repetition
+         t_index = 1; 
+         % Average all repetitions
+         dl_map_qpsk(1+(i-1)*48: i*48) = sum(t); 
+         i = i+1;              
     else
-        info = decode_DL_MAP_CTC(dl_map_qpsk ); 
+        t_index = t_index+1; 
+    end
+    if j==29 % The magic value "29" is index of the last slot
+      % The last slot of ofdm symbols pair 
+      j = 0; 
+      first_sym = first_sym+2; 
+    else
+      % Ajust number of the slot
+      j = j+1; 
+    end
+end
+
+figure(11); 
+plot(dl_map_qpsk, 'o'), title('averaged repetitions of DL_MAP'); 
+ 
+    
+
+    if(DL_Map_Length==28)        
+        % The  DL-MAP is located in the seven slots.
+        % Process first 4 slots.
+        [info1, parity] = decode_DL_MAP_CTC(dl_map_qpsk( 1:48*4), 'QPSK_1/2', CTC_params ); 
+        info_encoded = CTC_Encoder(info1, 'QPSK_1/2', CTC_params); 
+        parity_enc = info_encoded(end/2+1:end); 
+        parity_difference4 =  sum(abs(parity - parity_enc))         
+        % Process last 3 slots.
+        [info2, parity] = decode_DL_MAP_CTC(dl_map_qpsk( 48*4+1: end), 'QPSK_1/2', CTC_params ); 
+        info_encoded = CTC_Encoder(info2, 'QPSK_1/2', CTC_params); 
+        parity_enc = info_encoded(end/2+1:end); 
+        parity_difference3 =  sum(abs(parity - parity_enc))         
+        info = [info1, info2]; 
+        
+    else
+        [info, parity] = decode_DL_MAP_CTC(dl_map_qpsk, 'QPSK_1/2', CTC_params ); 
+        info_encoded = CTC_Encoder(info,  'QPSK_1/2', CTC_params ); 
+        parity_enc = info_encoded(end/2+1:end); 
+        parity_difference8 =  sum(abs(parity - parity_enc))         
     end
     
     fid = fopen('bit.txt', 'a'); 
@@ -177,10 +169,8 @@ if 1%DL_Map_Length==28
     fprintf(fid, '%d', info); 
     fclose(fid); 
     
-end
 
-pause(0.5); 
+
+pause(0.2); 
 
 end
-%frame_carrier_offset
-%q

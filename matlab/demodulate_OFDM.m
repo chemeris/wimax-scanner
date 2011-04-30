@@ -78,9 +78,13 @@ sym_fft = zeros(dem_params.num_ofdm_syms, 1024);
 
 %% generate scrambled pilot sequences
 pilots = zeros(num_ofdm_syms, params.Tb_samples); 
-pilots(1, params.pilot_shifted(2, :) ) = 1; 
-pilots(2, params.pilot_shifted(1, :) ) = 1; 
-pilots = DL0_derand(fftshift(pilots,2), 2, params);
+
+pilots(1:2:num_ofdm_syms, params.pilot_shifted(2, :) ) = 1; 
+pilots(2:2:num_ofdm_syms, params.pilot_shifted(1, :) ) = 1; 
+% pilots(3, params.pilot_shifted(2, :) ) = 1; 
+% pilots(4, params.pilot_shifted(1, :) ) = 1; 
+
+pilots = DL0_derand(fftshift(pilots,2), num_ofdm_syms, params);
 
 descrambled_pilots = []; 
 
