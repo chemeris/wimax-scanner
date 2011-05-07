@@ -104,7 +104,7 @@ end
 figure(1); 
 plot(abs(R)); 
 hold on 
-plot(frame_start_pos, abs(R(frame_start_pos)), 'x'); 
+plot(frame_start_pos, abs(R(frame_start_pos)), 'rx'); 
 
 hold off
 %frame_start_pos
