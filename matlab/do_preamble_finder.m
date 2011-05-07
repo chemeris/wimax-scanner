@@ -108,7 +108,13 @@ clear recode FCH_errors;
     
 %% DL-MAP work
 DL_Map_Length     = bin2dec(sprintf('%d', FCH_decoded(13:20).'));
-DL_Map_Repetition = 2*bin2dec(sprintf('%d', FCH_decoded(8:9).'));
+DL_Map_Repetition = bin2dec(sprintf('%d', FCH_decoded(8:9).'));
+% Repetition is coded as 00b => 1, 01b => 2, 10b => 4, 11b => 6
+if DL_Map_Repetition == 0
+    DL_Map_Repetition = 1;
+else
+    DL_Map_Repetition = 2*DL_Map_Repetition;
+end
 
 %% Extracted and averaged QPSK characters that contain DL MAP
 dl_map_qpsk = zeros(1, 48*DL_Map_Length/DL_Map_Repetition);     
@@ -124,8 +130,13 @@ while i<=DL_Map_Length/DL_Map_Repetition
     t(t_index, :) = get_slot_data(syms_fft_eq(first_sym:first_sym+1,:), j, 1, 2, params);
     if t_index==DL_Map_Repetition
          t_index = 1; 
-         % Average all repetitions
-         dl_map_qpsk(1+(i-1)*48: i*48) = sum(t); 
+         if DL_Map_Repetition ~= 1
+             % Average all repetitions
+             dl_map_qpsk(1+(i-1)*48: i*48) = sum(t);
+         else
+             % Save the only repetition
+             dl_map_qpsk(1+(i-1)*48: i*48) = t; 
+         end
          i = i+1;              
     else
         t_index = t_index+1; 
