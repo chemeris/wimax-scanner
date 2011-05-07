@@ -87,12 +87,13 @@ FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved, 'unquant');
 % We can also use hard decision this way:
 %FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved<0, 'hard');
 
-fprintf('preamble_idx = %d TO = %2.1f ', params.preamble_idx, timing_offset); 
+fprintf('\npreamble_idx = %d TO = %2.1f ', params.preamble_idx, timing_offset); 
 %% Check FCH correctness, estimate BER, print FCH and exit.
 % FCH is repeated twice for FFT sizes >128, so we can check that
 % we decoded it correctly:
 if ~all(FCH_decoded(1:24) == FCH_decoded(25:48))
    fprintf('FCH decoding failed!');
+   continue;
 end
 
 
@@ -102,7 +103,7 @@ end
 % and counting the number of different bits.
 recode = encode_CC_tail_biting(FCH_decoded);
 FCH_errors = sum(xor(FCH_deinterleaved<0, recode'));
-fprintf(' SNRpilots = %f dB, Number of error bits in FCH: %d\n', SNR_pilots, FCH_errors);
+fprintf(' SNRpilots = %f dB, Number of error bits in FCH: %d', SNR_pilots, FCH_errors);
 clear recode FCH_errors;
     
 %% DL-MAP work
@@ -112,11 +113,12 @@ DL_Map_Repetition = 2*bin2dec(sprintf('%d', FCH_decoded(8:9).'));
 %% Extracted and averaged QPSK characters that contain DL MAP
 dl_map_qpsk = zeros(1, 48*DL_Map_Length/DL_Map_Repetition);     
 i = 1; 
-j = 4; % Index of first slot DL-MAP (first slot after FCH), 
+j = 4 + 10*params.segment; % Index of first slot DL-MAP (first slot after FCH), 
        % only for segment 0! 
 t = zeros(DL_Map_Repetition, 48); 
 t_index = 1; 
 first_sym = 1; 
+count_slots = 4; % first 4 slots for FCH
 while i<=DL_Map_Length/DL_Map_Repetition
     % Collect DL_Map_Repetition of slots
     t(t_index, :) = get_slot_data(syms_fft_eq(first_sym:first_sym+1,:), j, 1, 2, params);
@@ -131,11 +133,18 @@ while i<=DL_Map_Length/DL_Map_Repetition
     if j==29 % The magic value "29" is index of the last slot
       % The last slot of ofdm symbols pair 
       j = 0; 
-      first_sym = first_sym+2; 
     else
       % Ajust number of the slot
       j = j+1; 
     end
+    
+    if  count_slots == 29     
+        count_slots = 0; 
+        first_sym = first_sym+2;         
+    else
+        count_slots = count_slots+1;
+    end
+          
 end
 
 figure(11); 
@@ -143,26 +152,31 @@ plot(dl_map_qpsk, 'o'), title('averaged repetitions of DL_MAP');
  
     
 
-    if(DL_Map_Length==28)        
-        % The  DL-MAP is located in the seven slots.
-        % Process first 4 slots.
-        [info1, parity] = decode_DL_MAP_CTC(dl_map_qpsk( 1:48*4), 'QPSK_1/2', CTC_params ); 
-        info_encoded = CTC_Encoder(info1, 'QPSK_1/2', CTC_params); 
-        parity_enc = info_encoded(end/2+1:end); 
-        parity_difference4 =  sum(abs(parity - parity_enc))         
-        % Process last 3 slots.
-        [info2, parity] = decode_DL_MAP_CTC(dl_map_qpsk( 48*4+1: end), 'QPSK_1/2', CTC_params ); 
-        info_encoded = CTC_Encoder(info2, 'QPSK_1/2', CTC_params); 
-        parity_enc = info_encoded(end/2+1:end); 
-        parity_difference3 =  sum(abs(parity - parity_enc))         
-        info = [info1, info2]; 
-        
-    else
-        [info, parity] = decode_DL_MAP_CTC(dl_map_qpsk, 'QPSK_1/2', CTC_params ); 
-        info_encoded = CTC_Encoder(info,  'QPSK_1/2', CTC_params ); 
-        parity_enc = info_encoded(end/2+1:end); 
-        parity_difference8 =  sum(abs(parity - parity_enc))         
-    end
+%     if(DL_Map_Length==28)        
+%         % The  DL-MAP is located in the seven slots.
+%         % Process first 4 slots.
+%         [info1, parity] = decode_DL_MAP_CTC(dl_map_qpsk( 1:48*4), 'QPSK_1/2', CTC_params ); 
+%         info_encoded = CTC_Encoder(info1, 'QPSK_1/2', CTC_params); 
+%         parity_enc = info_encoded(end/2+1:end); 
+%         parity_difference4 =  sum(abs(parity - parity_enc))         
+%         % Process last 3 slots.
+%         [info2, parity] = decode_DL_MAP_CTC(dl_map_qpsk( 48*4+1: end), 'QPSK_1/2', CTC_params ); 
+%         info_encoded = CTC_Encoder(info2, 'QPSK_1/2', CTC_params); 
+%         parity_enc = info_encoded(end/2+1:end); 
+%         parity_difference3 =  sum(abs(parity - parity_enc))         
+%         info = [info1, info2]; 
+%         
+%     else
+%         [info, parity] = decode_DL_MAP_CTC(dl_map_qpsk, 'QPSK_1/2', CTC_params ); 
+%         info_encoded = CTC_Encoder(info,  'QPSK_1/2', CTC_params ); 
+%         parity_enc = info_encoded(end/2+1:end); 
+%         parity_difference8 =  sum(abs(parity - parity_enc))         
+%     end
+
+% True CTC turbo decoder
+    [info, number_of_errors_in_DL_MAP] = CTC_Decode_Blocks(dl_map_qpsk, 'QPSK_1/2', CTC_params );    
+    fprintf(' Errors in DL-MAP = %d',  number_of_errors_in_DL_MAP); 
+    
     
     fid = fopen('bit.txt', 'a'); 
     fprintf(fid, '\n %02d: ',DL_Map_Length); 
