@@ -36,6 +36,10 @@ q= [];
 
 offset_timing_pos = 0; 
 for i = 1: length(frame_start_pos)
+    figure(1); hold on 
+    plot(frame_start_pos(i), 0, 'go'); 
+    hold off
+
 %% setup params of OFDM demodulator
 % set frame start position  
     dem_params.current_packet_start_pos =  frame_start_pos(i); 
