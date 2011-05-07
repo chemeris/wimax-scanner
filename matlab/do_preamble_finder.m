@@ -81,6 +81,8 @@ end
 
 %% De-interleave FCH (soft) bits
 FCH_deinterleaved = deinterleave_QPSK(FCH_demod_bits_best, 16);
+% Replace NaN's with 0s - Matlab Viterbi decoder can't handle NaN's.
+FCH_deinterleaved(isnan(FCH_deinterleaved)) = 0;
 
 %% Decode FCH using CC-1/2 with tail biting
 FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved, 'unquant');
