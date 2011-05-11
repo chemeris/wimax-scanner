@@ -52,7 +52,7 @@ if dem_params.preamble_idx < 0
     params.segment  = segment; 
 end  
 %% take current preamble 
-    ref = fftshift(preamble_freq(preamble_idx+1,:).'); 
+    ref = fftshift(preamble_freq(params.preamble_idx+1,:).'); 
     nonzero_idx = find(ref~=0);         
     
 %% precise timing correction
