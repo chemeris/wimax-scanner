@@ -55,7 +55,7 @@ end
     ref = fftshift(preamble_freq(preamble_idx+1,:).'); 
     nonzero_idx = find(ref~=0);         
     
-%% precision timing correction   
+%% precise timing correction
 % The general idea is to make the phase of the OFDM  symbol more  smooth.
 channel_fd = frame_fd .* conj(ref); 
 tmp1 = channel_fd(nonzero_idx); 
@@ -88,52 +88,56 @@ pilots = DL0_derand(fftshift(pilots,2), num_ofdm_syms, params);
 
 descrambled_pilots = []; 
 
+%% Process data
 for j=1:num_ofdm_syms            
     frame_td =  rcvdDL(p: p + params.Tb_samples-1);
-%TODO compensation of carrier offset shall be here   
-%% convert a current frame to frequency domain 
+    %% -- TODO compensation of carrier offset shall be here   
+    %% -- convert a current frame to frequency domain 
     frame_fd = fft(frame_td); 
     frame_fd = fftshift(frame_fd); 
     
     
-%% correct timing offset !        
+    %% -- correct timing offset
     frame_fd = frame_fd.*exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).';         
     frame_fd = frame_fd.*exp(-1j*phase_trend*(1:params.Tb_samples)).'; 
-%% update the estimation of channel 
-% shall be before equalizer !
+    %% -- update the estimation of channel 
+    % shall be done before equalizer !
     if(mod(j, 2)==1)
         current_pilots_ind = 2; 
     else
         current_pilots_ind = 1;         
     end
-% turn off it for make correct SNR_pilots    
+    % turned off because pilot-assisted estimation is buggy at this moment
 %    [f_eq, f_ch] = channel_estimator(f_ch, frame_fd, pilots(j, :).', params.pilot_shifted(current_pilots_ind,:).', 21, 0.2);         
-%% plot channel responce    
-    figure(3), subplot(2,1,1), plot(1:1024, abs(frame_fd), 1:1024, abs(f_ch));  
+    %% -- plot channel responce    
+    figure(3); plot(1:1024, abs(frame_fd), 1:1024, abs(f_ch));  
 
-%% apply equalizer    
+    %% -- apply equalizer    
     sym_equalized = frame_fd .* f_eq; %./abs(f_eq); %!!!
     syms_fft_eq(j,:) = fftshift(sym_equalized); 
    
-%% plot constellations of all subcarriers    
+    %% -- plot constellations of all subcarriers    
     figure(8);    
     plot( sym_equalized(params.sc_first:params.sc_last), '+');
     axis 'equal'
     axis 'square'
   
-    t = pilots(j, :).' .* sym_equalized; 
-    
-    descrambled_pilots = [descrambled_pilots; t(params.pilot_shifted(current_pilots_ind,:)); ];
+    %% -- save pilots for further analysis
+    t = pilots(j, :).' .* sym_equalized;
+    t = t(params.pilot_shifted(current_pilots_ind,:));
+    descrambled_pilots = [descrambled_pilots; t; ];
 
-
+    %% -- move to the next OFDM symbol
     p = p + params.Ts_samples; 
 %    carrier_phase = carrier_phase + frame_carrier_offset(i) * params.Ts_samples;  
 end    
 
+%% calculate SNR for pilots
 var_pilots = var(descrambled_pilots); 
 mean_pilots = mean(descrambled_pilots); 
 SNR_pilots = 10*log10(mean_pilots^2/var_pilots); 
 
+%% Plot pilots
 figure(19); 
 plot(descrambled_pilots, '+'), title('descrambled_pilots'); 
 axis 'equal'
