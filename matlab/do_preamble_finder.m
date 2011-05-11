@@ -108,7 +108,14 @@ recode = encode_CC_tail_biting(FCH_decoded);
 FCH_errors = sum(xor(FCH_deinterleaved<0, recode'));
 fprintf(' SNRpilots = %2.1f dB, FCH error bits: %d', SNR_pilots, FCH_errors);
 clear recode FCH_errors;
-    
+
+%% Print FCH bits
+fid = fopen('bit.txt', 'a'); 
+fprintf(fid, '%d FCH 4 ', i); % FCH occupies 4 subchannels 
+fprintf(fid, '%d', FCH_decoded(1:24)); 
+fprintf(fid, '\n'); 
+fclose(fid); 
+
 %% DL-MAP work
 DL_Map_Length     = bin2dec(sprintf('%d', FCH_decoded(13:20).'));
 DL_Map_Repetition = bin2dec(sprintf('%d', FCH_decoded(8:9).'));
@@ -192,10 +199,10 @@ plot(dl_map_qpsk, 'o'), title('averaged repetitions of DL_MAP');
     fprintf(' DL-MAP error bits = %d',  number_of_errors_in_DL_MAP); 
 
     fid = fopen('bit.txt', 'a'); 
-    fprintf(fid, '\n %02d: ',DL_Map_Length); 
+    fprintf(fid, '%d DL-MAP %02d ', i, DL_Map_Length); 
     fprintf(fid, '%d', info); 
+    fprintf(fid, '\n'); 
     fclose(fid); 
-    
 
     %% Done with this frame
     fprintf('\n');
