@@ -121,26 +121,25 @@ end
 
 %% Extracted and averaged QPSK characters that contain DL MAP
 dl_map_qpsk = zeros(1, 48*DL_Map_Length/DL_Map_Repetition);     
-i = 1; 
-j = 4 + 10*params.segment; % Index of first slot DL-MAP (first slot after FCH), 
-       % only for segment 0! 
+k = 1; 
+count_slots = 4; % first 4 slots for FCH
+j = count_slots + 10*params.segment; % Index of first slot DL-MAP (first slot after FCH)
 t = zeros(DL_Map_Repetition, 48); 
 t_index = 1; 
 first_sym = 1; 
-count_slots = 4; % first 4 slots for FCH
-while i<=DL_Map_Length/DL_Map_Repetition
+while k<=DL_Map_Length/DL_Map_Repetition
     % Collect DL_Map_Repetition of slots
     t(t_index, :) = get_slot_data(syms_fft_eq(first_sym:first_sym+1,:), j, 1, 2, params);
     if t_index==DL_Map_Repetition
          t_index = 1; 
          if DL_Map_Repetition ~= 1
              % Average all repetitions
-             dl_map_qpsk(1+(i-1)*48: i*48) = sum(t);
+             dl_map_qpsk(1+(k-1)*48: k*48) = sum(t);
          else
              % Save the only repetition
-             dl_map_qpsk(1+(i-1)*48: i*48) = t; 
+             dl_map_qpsk(1+(k-1)*48: k*48) = t; 
          end
-         i = i+1;              
+         k = k+1;              
     else
         t_index = t_index+1; 
     end
