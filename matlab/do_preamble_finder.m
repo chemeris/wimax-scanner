@@ -197,7 +197,8 @@ plot(dl_map_qpsk, 'o'), title('averaged repetitions of DL_MAP');
     fclose(fid); 
     
 
+    %% Done with this frame
+    fprintf('\n');
 
-pause(0.2); 
-
+    pause(0.2); 
 end
