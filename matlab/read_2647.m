@@ -47,9 +47,8 @@ else
     clear in fid;
 end
 
-frame = rcvdDL(42705:77e3);
-
 if 0
+    frame = rcvdDL(42705:77e3);
     figure ; spectrogram(frame, params.N_fft, 750, params.N_fft, params.Fs)
     figure ; plot(abs(frame))
     figure ; pwelch(frame, params.N_fft, 750, params.N_fft, params.Fs)
