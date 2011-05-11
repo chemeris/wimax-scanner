@@ -1,6 +1,6 @@
 %function [] = CTC_find_params()
-% Refer to table 504 CTC channel coding per modulation
-CTC_channel_coding_per_modulation = ...
+% Refer to table 504 - CTC channel coding per modulation
+CTC_params.CTC_channel_coding_per_modulation = ...
 {	'Modulation, Code rate', 'Data_block_size','Enc_data_block_size', 'N', 'P'
 	'QPSK_1/2'   6 12  	 24  [5 0 0 0           ]
 	'QPSK_1/2'	 12 24 	 48  [13 24 0 24        ]
@@ -35,8 +35,8 @@ CTC_channel_coding_per_modulation = ...
 	'64-QAM_5/6' 30 36 	 120 [13 60 0 60        ]
 	'64-QAM_5/6' 60 72 	 240 [13 120 60 180     ]}; 
 			
-%Refer to Table 505—Parameters for the subblock interleavers
-Parameters_for_the_subblock_interleavers = ...
+%Refer to Table 505 - Parameters for the subblock interleavers
+CTC_params.Parameters_for_the_subblock_interleavers = ...
 {	'Block size(bits)', 'N', ' m', 'J'
 	48  24  3 3
 	72  36  4 3
@@ -50,9 +50,6 @@ Parameters_for_the_subblock_interleavers = ...
 	384 192 6 3
 	432 216 6 4
 	480 240 7 2}; 
-
-CTC_params.CTC_channel_coding_per_modulation = CTC_channel_coding_per_modulation; 
-CTC_params.Parameters_for_the_subblock_interleavers = Parameters_for_the_subblock_interleavers
 
 
 
