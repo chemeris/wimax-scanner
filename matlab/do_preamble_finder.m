@@ -93,23 +93,20 @@ FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved, 'unquant');
 % We can also use hard decision this way:
 %FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved<0, 'hard');
 
-fprintf('\npreamble_idx = %d TO = %2.1f ', params.preamble_idx, timing_offset); 
-%% Check FCH correctness, estimate BER, print FCH and exit.
+fprintf('preamble_idx = %d TO = %2.1f ', params.preamble_idx, timing_offset); 
+%% Check FCH correctness and estimate BER
 % FCH is repeated twice for FFT sizes >128, so we can check that
 % we decoded it correctly:
 if ~all(FCH_decoded(1:24) == FCH_decoded(25:48))
-   fprintf('FCH decoding failed!');
+   fprintf('FCH decoding failed!\n');
    continue;
 end
-
-
-
 
 % Estimate the number of incorrectly received bits by encoding FCH again
 % and counting the number of different bits.
 recode = encode_CC_tail_biting(FCH_decoded);
 FCH_errors = sum(xor(FCH_deinterleaved<0, recode'));
-fprintf(' SNRpilots = %f dB, Number of error bits in FCH: %d', SNR_pilots, FCH_errors);
+fprintf(' SNRpilots = %2.1f dB, FCH error bits: %d', SNR_pilots, FCH_errors);
 clear recode FCH_errors;
     
 %% DL-MAP work
@@ -168,6 +165,7 @@ figure(11);
 plot(dl_map_qpsk, 'o'), title('averaged repetitions of DL_MAP'); 
  
     
+%% Decode DL-MAP burst to bits
 
 %     if(DL_Map_Length==28)        
 %         % The  DL-MAP is located in the seven slots.
@@ -192,9 +190,8 @@ plot(dl_map_qpsk, 'o'), title('averaged repetitions of DL_MAP');
 
 % True CTC turbo decoder
     [info, number_of_errors_in_DL_MAP] = CTC_Decode_Blocks(dl_map_qpsk, 'QPSK_1/2', CTC_params );    
-    fprintf(' Errors in DL-MAP = %d',  number_of_errors_in_DL_MAP); 
-    
-    
+    fprintf(' DL-MAP error bits = %d',  number_of_errors_in_DL_MAP); 
+
     fid = fopen('bit.txt', 'a'); 
     fprintf(fid, '\n %02d: ',DL_Map_Length); 
     fprintf(fid, '%d', info); 
