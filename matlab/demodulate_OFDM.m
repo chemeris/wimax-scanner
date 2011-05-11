@@ -119,8 +119,9 @@ for j=1:num_ofdm_syms
     %% -- plot constellations of all subcarriers    
     figure(8);    
     plot( sym_equalized(params.sc_first:params.sc_last), '+');
-    axis 'equal'
-    axis 'square'
+    title('All subcarriers');
+    axis([-3 3 -3 3])
+    axis('square')
   
     %% -- save pilots for further analysis
     t = pilots(j, :).' .* sym_equalized;
@@ -139,9 +140,7 @@ SNR_pilots = 10*log10(mean_pilots^2/var_pilots);
 
 %% Plot pilots
 figure(19); 
-plot(descrambled_pilots, '+'), title('descrambled_pilots'); 
-axis 'equal'
-
-
-
+plot(descrambled_pilots, '+'); title('Descrambled pilots'); 
+axis([-3 3 -3 3])
+axis('square')
  
