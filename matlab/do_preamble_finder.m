@@ -1,7 +1,7 @@
 % main script of testbench OFDM system 
 clear all
 set_params
-set_CTC_params
+CTC_set_params
 preambles
 pilots
 %test_carriers_permuter
