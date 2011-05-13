@@ -197,8 +197,8 @@ end
     % Adjust phase and amplitude of reference sequence
     recoded_DL_MAP = e * recoded_DL_MAP; 
     % Substract recoded DL MAP
-    for i=1:DL_Map_Repetition
-         dl_map_not_averaged(i,:)  = dl_map_not_averaged(i,:) - recoded_DL_MAP;          
+    for k=1:DL_Map_Repetition
+         dl_map_not_averaged(k,:)  = dl_map_not_averaged(k,:) - recoded_DL_MAP;          
     end    
     dl_map_not_averaged = reshape( dl_map_not_averaged.', DL_Map_Repetition*length(recoded_DL_MAP), 1); 
     DL_MAP_SNR = -20*log10(std(dl_map_not_averaged)/(DL_Map_Repetition*std(recoded_DL_MAP)));     
