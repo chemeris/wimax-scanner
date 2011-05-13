@@ -136,6 +136,17 @@ fprintf(fid, '%d', FCH_decoded(1:24));
 fprintf(fid, '\n'); 
 fclose(fid); 
 
+%% Plot found frame and optionally save it to a file
+if 1
+    p = frame_start_pos(i);
+    % We assume 5 ms frame here
+    h = figure(7) ; spectrogram(rcvdDL(p:p+params.Fs*0.005-1), params.N_fft, 750, params.N_fft, params.Fs);
+    if 0
+        % Save to frame_xxx.png
+        print(h, ['frame_' sprintf('%03d', i) '.png'], '-dpng');
+    end
+end
+
 %% DL-MAP work
 DL_Map_Length     = bin2dec(sprintf('%d', FCH_decoded(13:20).'));
 DL_Map_Repetition = bin2dec(sprintf('%d', FCH_decoded(8:9).'));
