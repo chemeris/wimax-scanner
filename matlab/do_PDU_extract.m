@@ -25,7 +25,7 @@ diuc_0 = load('diuc_0.txt','-ascii');
 
 %% Cycle trough all the data
 frames_total = length(diuc_0(:,1));
-for k = 62%:frames_total
+for k = 1:frames_total
     %% Get segment information
     frame_num = diuc_0(k,1);
     PDU_start_sym = diuc_0(k,2);
@@ -35,7 +35,7 @@ for k = 62%:frames_total
     PDU_repetition = diuc_0(k,6);
 
     fprintf('%d | Start: %d sym, %d subch | Size: %d sym x %d subch | Repetition: %d ', ...
-            frame_num, PDU_start_sym, PDU_start_subch, PDU_length_sym, PDU_length_subch, ...
+            frame_num, PDU_start_sym, PDU_start_subch, PDU_width_sym, PDU_width_subch, ...
             PDU_repetition);
 
     
@@ -45,7 +45,7 @@ for k = 62%:frames_total
     % set estimated carrier offset    
     dem_params.current_packet_cfo = frame_carrier_offset(frame_num);  
     % set number of OFDM symbols for processing     
-    dem_params.num_ofdm_syms = PDU_start_sym+PDU_length_sym-1;
+    dem_params.num_ofdm_syms = PDU_start_sym+PDU_width_sym-1;
     % tell demodulator try  to detect the preamble
     % if case dem_params.preamble_idx > 1 then detection of the preamble will
     % not be made
@@ -64,8 +64,13 @@ for k = 62%:frames_total
                            PDU_start_sym, PDU_start_subch, ...
                            PDU_width_sym, PDU_width_subch, ...
                            syms_fft_eq, params);
+                       
+    if PDU_repetition>1
+    % Average all repetitions.     
+       PDU_qpsk = sum(PDU_qpsk);        
+    end    
     %% Decode
-    [info, number_of_errors_in_PDU] = CTC_Decode_Blocks(PDU_qpsk, 'QPSK_1/2', CTC_params );
+    [info, ~, number_of_errors_in_PDU] = CTC_Decode_Blocks(PDU_qpsk, 'QPSK_1/2', CTC_params );
     fprintf(' PDU error bits = %d\n',  number_of_errors_in_PDU); 
 
     %% Output to a file
