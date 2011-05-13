@@ -24,6 +24,10 @@
 % equalization the OFDM symbols. 
 % The script is controlled structure "dem_params".
 
+% Set the parameters for channel estimator
+fd_sm_length = 51;
+td_sm_factor = 0.2;
+QPSK_mode = true; 
 
 p = dem_params.current_packet_start_pos; 
 current_packet_cfo = dem_params.current_packet_cfo;  
@@ -63,13 +67,10 @@ phase_trend = angle( tmp1(1:end-1)' * tmp1(2:end) )/3;
 frame_fd = frame_fd.*exp(-1j*phase_trend*(1:params.Tb_samples)).'; 
 channel_fd = frame_fd .* conj(ref); 
 
-% figure(3); 
-% subplot(2,1,1), plot( abs(channel_fd) ); 
-% subplot(2,1,2), plot(angle(channel_fd)); 
-
 % estimate channel and equalizer responces in the frequency domain
-[f_eq, f_ch] = channel_estimator([], frame_fd, ref, nonzero_idx, 21, 1); 
-
+[f_eq, f_ch] = channel_estimator([], frame_fd, ref, nonzero_idx, ...
+                    fd_sm_length, td_sm_factor, QPSK_mode); 
+ 
 % the timing_offset in samples for information only
 timing_offset = phase_trend/(2*pi/1024); 
 p = p + params.Ts_samples; 
@@ -101,32 +102,40 @@ for j=1:num_ofdm_syms
     frame_fd = frame_fd.*exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).';         
     frame_fd = frame_fd.*exp(-1j*phase_trend*(1:params.Tb_samples)).'; 
     %% -- update the estimation of channel 
-    % shall be done before equalizer !
     if(mod(j, 2)==1)
         current_pilots_ind = 2; 
     else
         current_pilots_ind = 1;         
     end
-    % turned off because pilot-assisted estimation is buggy at this moment
-%    [f_eq, f_ch] = channel_estimator(f_ch, frame_fd, pilots(j, :).', params.pilot_shifted(current_pilots_ind,:).', 21, 0.2);         
-    %% -- plot channel responce    
-    figure(3); plot(1:1024, abs(frame_fd), 1:1024, abs(f_ch));  
+    [f_eq, f_ch] = channel_estimator(f_ch, frame_fd, ...
+        pilots(j, :).', params.pilot_shifted(current_pilots_ind,:).',...
+        fd_sm_length, td_sm_factor, QPSK_mode);         
+    %% --plot channel responce    
+    figure(3), plot(1:1024, abs(frame_fd), '-b', 1:1024, abs(f_ch),'-r'); 
+    title('Estimated channel responce'); 
 
     %% -- apply equalizer    
     sym_equalized = frame_fd .* f_eq; %./abs(f_eq); %!!!
     syms_fft_eq(j,:) = fftshift(sym_equalized); 
-   
-    %% -- plot constellations of all subcarriers    
-    figure(8);    
-    plot( sym_equalized(params.sc_first:params.sc_last), '+');
-    title('All subcarriers');
-    axis([-3 3 -3 3])
-    axis('square')
-  
+
     %% -- save pilots for further analysis
     t = pilots(j, :).' .* sym_equalized;
     t = t(params.pilot_shifted(current_pilots_ind,:));
     descrambled_pilots = [descrambled_pilots; t; ];
+    
+    %% -- plot constellations of all subcarriers    
+    figure(8);
+    subplot(1,2,1);    
+    plot( sym_equalized(params.sc_first:params.sc_last), '+');
+    m = max(abs(sym_equalized(params.sc_first:params.sc_last))); 
+    title('All subcarriers');
+    axis([-m m -m m])
+    axis('square')
+    %% -- plot pilots
+    subplot(1,2,2); 
+    plot(descrambled_pilots, '+'); title('Descrambled pilots');     
+    axis([-m m -m m])
+    axis('square')     
 
     %% -- move to the next OFDM symbol
     p = p + params.Ts_samples; 
@@ -138,9 +147,4 @@ var_pilots = var(descrambled_pilots);
 mean_pilots = mean(descrambled_pilots); 
 SNR_pilots = 10*log10(mean_pilots^2/var_pilots); 
 
-%% Plot pilots
-figure(19); 
-plot(descrambled_pilots, '+'); title('Descrambled pilots'); 
-axis([-3 3 -3 3])
-axis('square')
  

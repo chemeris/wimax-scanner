@@ -50,10 +50,6 @@ read_2647
 figure(2);
 hold off; 
 plot(0,0, 'x'); 
-figure(7); 
-hold off; 
-plot(0,0, 'x'); 
-q= []; 
 
 
 offset_timing_pos = 0; 
@@ -75,7 +71,9 @@ for i = 1: length(frame_start_pos)
     dem_params.preamble_idx = -1; 
 %  detect preamble, demodulate, equalizate
 %  produce syms_fft_eq 
+
     demodulate_OFDM
+    
 
 %% Derandomization of the OFDM carriers
 
@@ -128,8 +126,8 @@ end
 % and counting the number of different bits.
 recode = encode_CC_tail_biting(FCH_decoded);
 FCH_errors = sum(xor(FCH_deinterleaved<0, recode'));
-fprintf(' SNRpilots = %2.1f dB, FCH error bits: %d', SNR_pilots, FCH_errors);
-clear recode FCH_errors;
+%fprintf(' SNRpilots = %2.1f dB, FCH error bits: %d', SNR_pilots, FCH_errors);
+clear recode% FCH_errors;
 
 %% Print FCH bits
 fid = fopen('bit.txt', 'a'); 
@@ -152,40 +150,49 @@ DL_MAP_length_sym = ceil(DL_Map_Length/params.N_subchannels);
 %% Extract DL-MAP 
 % DL-MAP is the first slot after FCH, so we should skip 4 subchannels
 % of FCH
-dl_map_qpsk = PDU_extract(DL_Map_Repetition, 4, DL_Map_Length, ...
-                          1, 0, ... start: OFDM symbol 1, subchanel 0
-                          DL_MAP_length_sym, params.N_subchannels, ...
-                          syms_fft_eq, params);
-figure(11); 
-plot(dl_map_qpsk, 'o'), title('averaged repetitions of DL_MAP'); 
+dl_map_not_averaged = PDU_extract(DL_Map_Repetition, 4, DL_Map_Length, ...
+                                  1, 0, ... start: OFDM symbol 1, subchanel 0
+                                  DL_MAP_length_sym, params.N_subchannels, ...
+                                  syms_fft_eq, params);
+
+if DL_Map_Repetition > 1    
+    % Average all DL-MAP repititions
+    dl_map_qpsk = sum(dl_map_not_averaged); 
+else
+    dl_map_qpsk = dl_map_not_averaged; 
+end
+
+if 0    
+    figure(11); 
+    plot(dl_map_qpsk, 'o'), title('averaged repetitions of DL_MAP'); 
+end
  
     
 %% Decode DL-MAP burst to bits
-
-%     if(DL_Map_Length==28)        
-%         % The  DL-MAP is located in the seven slots.
-%         % Process first 4 slots.
-%         [info1, parity] = decode_DL_MAP_CTC(dl_map_qpsk( 1:48*4), 'QPSK_1/2', CTC_params ); 
-%         info_encoded = CTC_Encoder(info1, 'QPSK_1/2', CTC_params); 
-%         parity_enc = info_encoded(end/2+1:end); 
-%         parity_difference4 =  sum(abs(parity - parity_enc))         
-%         % Process last 3 slots.
-%         [info2, parity] = decode_DL_MAP_CTC(dl_map_qpsk( 48*4+1: end), 'QPSK_1/2', CTC_params ); 
-%         info_encoded = CTC_Encoder(info2, 'QPSK_1/2', CTC_params); 
-%         parity_enc = info_encoded(end/2+1:end); 
-%         parity_difference3 =  sum(abs(parity - parity_enc))         
-%         info = [info1, info2]; 
-%         
-%     else
-%         [info, parity] = decode_DL_MAP_CTC(dl_map_qpsk, 'QPSK_1/2', CTC_params ); 
-%         info_encoded = CTC_Encoder(info,  'QPSK_1/2', CTC_params ); 
-%         parity_enc = info_encoded(end/2+1:end); 
-%         parity_difference8 =  sum(abs(parity - parity_enc))         
-%     end
-
 % True CTC turbo decoder
-    [info, number_of_errors_in_DL_MAP] = CTC_Decode_Blocks(dl_map_qpsk, 'QPSK_1/2', CTC_params );    
-    fprintf(' DL-MAP error bits = %d',  number_of_errors_in_DL_MAP); 
+[info, recoded_info, number_of_errors_in_DL_MAP] = ...
+                CTC_Decode_Blocks(dl_map_qpsk, 'QPSK_1/2', CTC_params );    
+
+    
+%% Estimate SNR         
+    % Convert bits to QPSK symbols   
+    recoded_DL_MAP = sqrt(1/2)*((1-2*recoded_info(1:2:end)) + 1j*(1-2*recoded_info(2:2:end))); 
+if 0
+    figure(11),  plot(dl_map_not_averaged.', 'o'), title('not averaged DL_MAP');   
+end    
+    e = dl_map_not_averaged * recoded_DL_MAP';   
+    e = sum(e)/(DL_Map_Repetition*length(recoded_DL_MAP)); 
+    
+    % Adjust phase and amplitude of reference sequence
+    recoded_DL_MAP = e * recoded_DL_MAP; 
+    % Substract recoded DL MAP
+    for i=1:DL_Map_Repetition
+         dl_map_not_averaged(i,:)  = dl_map_not_averaged(i,:) - recoded_DL_MAP;          
+    end    
+    dl_map_not_averaged = reshape( dl_map_not_averaged.', DL_Map_Repetition*length(recoded_DL_MAP), 1); 
+    DL_MAP_SNR = -20*log10(std(dl_map_not_averaged)/(DL_Map_Repetition*std(recoded_DL_MAP)));     
+%% Print status   
+    fprintf('Errors in FCH: %d  Errors in DL-MAP = %d DL_MAP_SNR=%2.1f dB G=%1.2E Phi=%2.1f degrees', FCH_errors, number_of_errors_in_DL_MAP,  DL_MAP_SNR, abs(e), angle(e)/pi*180);     
 
     fid = fopen('bit.txt', 'a'); 
     fprintf(fid, '%d DL-MAP %02d ', i, DL_Map_Length); 

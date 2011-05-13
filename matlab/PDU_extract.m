@@ -3,7 +3,7 @@ function [PDU_qpsk] = PDU_extract(PDU_repetition, ...
                                   PDU_start_sym, PDU_start_subch, ...
                                   PDU_size_sym, PDU_size_subch, ...
                                   syms_fft_eq, params)
-% Extract and average QPSK characters
+% Extract QPSK characters
 %
 % function [PDU_qpsk] = PDU_extract(PDU_repetition, ...
 %                                   PDU_skip_subch, PDU_length_subch, ...
@@ -45,7 +45,7 @@ if isinf(PDU_length_subch) || PDU_length_subch <= 0
     % PDU_length_subch is not set - assume full block
     PDU_length_subch = (PDU_size_sym/2)*PDU_size_subch-PDU_skip_subch;
 end
-PDU_qpsk = zeros(1, 48*PDU_length_subch/PDU_repetition);
+PDU_qpsk = zeros(PDU_repetition, 48*PDU_length_subch/PDU_repetition);
 i = 1; 
 count_slots = PDU_skip_subch;
 j = PDU_skip_subch + PDU_start_subch + 10*params.segment; % Index of first slot
@@ -58,8 +58,8 @@ while i <= PDU_length_subch/PDU_repetition
     if t_index==PDU_repetition
         t_index = 1; 
         if PDU_repetition ~= 1
-            % Average all repetitions
-            PDU_qpsk(1+(i-1)*48: i*48) = sum(t);
+            % Save all repetitions
+            PDU_qpsk(:,1+(i-1)*48: i*48) = t;
         else
             % Save the only repetition
             PDU_qpsk(1+(i-1)*48: i*48) = t; 

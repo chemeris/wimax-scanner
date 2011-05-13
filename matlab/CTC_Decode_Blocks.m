@@ -1,4 +1,4 @@
-function [info, num_errors] = CTC_Decode_Blocks(x,  Modulation_CodeRate, CTC_params) 
+function [info, recoded_info, num_errors] = CTC_Decode_Blocks(x,  Modulation_CodeRate, CTC_params) 
 % Divide the input into blocks, compute the metric bits, 
 % perform the turbo decoding.
 % Copyright (C) 2011  Alexey Ostapenko
@@ -18,7 +18,7 @@ function [info, num_errors] = CTC_Decode_Blocks(x,  Modulation_CodeRate, CTC_par
 % Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 % USA
 %
-% [info, num_errors] = CTC_Decode_Blocks(x,  Modulation_CodeRate, CTC_params)
+% [info, recoded_info, num_errors] = CTC_Decode_Blocks(x,  Modulation_CodeRate, CTC_params)
 % Function parameters:
 %   x - input row vector of complex samples,
 %   Modulation_CodeRate - valid valies is 'QPSK_1/2','QPSK_3/4',
@@ -26,6 +26,10 @@ function [info, num_errors] = CTC_Decode_Blocks(x,  Modulation_CodeRate, CTC_par
 %                                       '64-QAM_2/3','64-QAM_3/4','64-QAM_3/4',
 %                                       '64-QAM_5/6','64-QAM_5/6'; 
 %   CTC_params  - various tables for CTC encoder(decoder). 
+% Function outputs:
+%   info - decoded and descrambled bits of information
+%   recoded_info - scrambled and encoded info
+
 
 
 n = fix(length(x)/48); % number of slots
@@ -68,6 +72,7 @@ end
 %% Decode all blocks
 pos = 1; 
 info = []; 
+recoded_info = []; 
 num_errors = 0; 
 for i =1: length(blks_size)
     tmp = x(pos:pos-1+blks_size(i)*48); 
@@ -75,6 +80,7 @@ for i =1: length(blks_size)
     bits_metrics = reshape([-real(tmp); -imag(tmp); ], length(tmp)*2, 1).'; % only for QPSK!
     [decoded_block, quality] = CTC_Decoder(bits_metrics, 4, Modulation_CodeRate, CTC_params); 
     recoded_block = CTC_Encoder(decoded_block, Modulation_CodeRate,  CTC_params);    
+    recoded_info = [recoded_info, recoded_block]; 
     hard_bits = reshape([real(tmp)<0; imag(tmp)<0; ], length(tmp)*2, 1).'; %  only for QPSK!
     num_errors =  num_errors + sum(abs(recoded_block-hard_bits)); 
     
