@@ -1,4 +1,7 @@
 Patch fixes a bug with incorrect display of Compressed UL-MAP after Compressed DL-MAP.
+Wrong length of items in wimax Compressed DL-MAP and UL-MAP.
+Link to Wireshark Bug Database - Bug 6067:
+https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=6067
 Index: plugins/wimax/msg_dlmap.c
 ===================================================================
 --- plugins/wimax/msg_dlmap.c	(revision 36939)
