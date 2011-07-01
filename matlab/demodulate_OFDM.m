@@ -41,11 +41,11 @@ frame_td =  rcvdDL(p: p + params.Tb_samples-1);
 
 % convert to frequency domain
 frame_fd = fft(frame_td); 
-frame_fd = fftshift(frame_fd); 
+frame_fd_for_CFO = fftshift(frame_fd); 
         
 %% compensation of  the systematic timing offset 
 % this needed, since FFT window lie at the centre of the OFDM symbol
-frame_fd = frame_fd.*exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).'; 
+frame_fd = frame_fd_for_CFO.*exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).'; 
 
 %% find preamble index 
 if dem_params.preamble_idx < 0
@@ -55,6 +55,16 @@ if dem_params.preamble_idx < 0
     params.id_cell  = id_cell; 
     params.segment  = segment; 
 end  
+%% Estimate CFO
+   cfo =  CFO_Estimator(frame_fd_for_CFO, segment, CFO_Estimator_params);  
+%  cfo = cfo*1.25;  
+
+% Compensate the CFO for preamble
+   frame_fd = fftshift( fft(frame_td .* exp(-1j * cfo * (0:1023)).'));
+   % Compensation of  the systematic timing offset 
+   frame_fd = frame_fd .* exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).'; 
+   carrier_phase = 0;
+
 %% take current preamble 
     ref = fftshift(preamble_freq(params.preamble_idx+1,:).'); 
     nonzero_idx = find(ref~=0);         
@@ -92,11 +102,14 @@ descrambled_pilots = [];
 %% Process data
 for j=1:num_ofdm_syms            
     frame_td =  rcvdDL(p: p + params.Tb_samples-1);
-    %% -- TODO compensation of carrier offset shall be here   
-    %% -- convert a current frame to frequency domain 
+    %% Compensation of carrier offset     
+    carrier_phase = carrier_phase + params.Ts_samples*cfo;
+    frame_td = frame_td .* exp(-1j * (carrier_phase + cfo * (0:1023))).'; 
+    
+    %% -- convert a current frame to frequency domain     
     frame_fd = fft(frame_td); 
     frame_fd = fftshift(frame_fd); 
-    
+    figure(13),     plot(500:520, abs(frame_fd(500:520))), hold on
     
     %% -- correct timing offset
     frame_fd = frame_fd.*exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).';         
@@ -142,6 +155,7 @@ for j=1:num_ofdm_syms
 %    carrier_phase = carrier_phase + frame_carrier_offset(i) * params.Ts_samples;  
 end    
 
+% figure(13), hold off
 %% calculate SNR for pilots
 var_pilots = var(descrambled_pilots); 
 mean_pilots = mean(descrambled_pilots); 
