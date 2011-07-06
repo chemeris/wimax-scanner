@@ -26,6 +26,7 @@ set_params
 CTC_set_params
 preambles
 pilots
+CFO_Estimator_params = CFO_Estimator_Init(-pi*1.1/1024, pi*1.1/1024, 9, 7);
 %test_carriers_permuter
 
 %% Get data
@@ -40,12 +41,16 @@ read_2647
 % v = v * sqrt(4); 
 % rcvdDL = rcvdDL + v * (randn(length(rcvdDL),1) + 1j*randn(length(rcvdDL),1) ); 
 %% find frame start position and frame carrier offset
-%.*exp(1j*0.0064*(1:300000)).'
 
-%rcvdDL(1:300000) = rcvdDL(1:300000).*exp(1j*2*pi/1024*(6.5/3)*(1:300000)).';
+rcvdDL = resample(rcvdDL, 112, 125); 
+%  -0.0004 is carrier offset for 'wimax-12.5M-2505-g45.cfile'
+
+%rcvdDL = conj(rcvdDL);
+
 [frame_start_pos, frame_carrier_offset] = find_preamble(params, rcvdDL) ;
-
-
+%rcvdDL = rcvdDL.*exp(1j*(-0.0004)*(1:length(rcvdDL))).';
+% Test CFO compensation 
+rcvdDL = rcvdDL.*exp(1j*(1.5*pi/512)*(1:length(rcvdDL))).';
 
 figure(2);
 hold off; 
@@ -58,6 +63,7 @@ for i = 1: length(frame_start_pos)
     plot(frame_start_pos(i), 0, 'go'); 
     hold off
 
+    
 %% setup params of OFDM demodulator
 % set frame start position  
     dem_params.current_packet_start_pos =  frame_start_pos(i); 
@@ -69,6 +75,7 @@ for i = 1: length(frame_start_pos)
 % if case dem_params.preamble_idx > 1 then detection of the preamble will
 % not be made
     dem_params.preamble_idx = -1; 
+    
 %  detect preamble, demodulate, equalizate
 %  produce syms_fft_eq 
 
@@ -137,7 +144,7 @@ fprintf(fid, '\n');
 fclose(fid); 
 
 %% Plot found frame and optionally save it to a file
-if 1
+if 0
     p = frame_start_pos(i);
     % We assume 5 ms frame here
     h = figure(7) ; spectrogram(rcvdDL(p:p+params.Fs*0.005-1), params.N_fft, 750, params.N_fft, params.Fs);
@@ -203,7 +210,7 @@ end
     dl_map_not_averaged = reshape( dl_map_not_averaged.', DL_Map_Repetition*length(recoded_DL_MAP), 1); 
     DL_MAP_SNR = -20*log10(std(dl_map_not_averaged)/(DL_Map_Repetition*std(recoded_DL_MAP)));     
 %% Print status   
-    fprintf('Errors in FCH: %d  Errors in DL-MAP = %d DL_MAP_SNR=%2.1f dB G=%1.2E Phi=%2.1f degrees', FCH_errors, number_of_errors_in_DL_MAP,  DL_MAP_SNR, abs(e), angle(e)/pi*180);     
+    fprintf('Errors in FCH: %d  Errors in DL-MAP = %d DL_MAP_SNR=%2.1f dB G=%1.2E Phi=%2.1f degrees CFO/dF=%1.3f', FCH_errors, number_of_errors_in_DL_MAP,  DL_MAP_SNR, abs(e), angle(e)/pi*180, cfo/(2*pi/1024));     
 
     fid = fopen('bit.txt', 'a'); 
     fprintf(fid, '%d DL-MAP %02d ', i, DL_Map_Length); 
