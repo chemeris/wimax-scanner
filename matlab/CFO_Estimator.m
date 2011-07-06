@@ -73,7 +73,8 @@ end
 % The parabolic interpolation on three points
 k = (y0-y1)/(y0-y2); 
 cfo = -0.5*(k*(x0^2 - x2^2) - (x0^2 - x1^2))/ ((x0-x1)-k*(x0-x2)); 
+% plot m
 if 0
-figure(11), plot(m);
+  figure(11), hold on, plot(m);
 end
 

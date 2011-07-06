@@ -21,15 +21,19 @@
 % domain).
 
 
-function [frame_start_pos, frame_carrier_offset] = find_preamble(params, s)
+function [frame_start_pos, frame_carrier_offset, norm_acf] = find_preamble(params, s)
 %function [frame_start_pos, frame_carrier_offset] = find_preamble(params,
 %s)
 % 
 frame_start_pos = []; 
 frame_carrier_offset = []; 
+norm_acf = []; 
 
 d = round(1024/3); 
-threshold = 0.65; 
+
+threshold = 0.7; 
+%threshold = 0.65; 
+%threshold = 0.5; 
 NN = length(s) - params.Ts_samples ; 
 detector_delay = d; 
 
@@ -91,6 +95,7 @@ for i=1:length(R)
     else
         if count == d-1  
             frame_start_pos(end+1) = i-d; 
+            norm_acf(end+1) = maxR; 
             maxR = -1;
             count = -1;
         else
@@ -100,13 +105,14 @@ for i=1:length(R)
         end
     end
 end
-
+if 0
 figure(1); 
 plot(abs(R)); 
 hold on 
 plot(frame_start_pos, abs(R(frame_start_pos)), 'rx'); 
 
 hold off
+end
 %frame_start_pos
 frame_carrier_offset = angle( R(frame_start_pos) )/d;  
 

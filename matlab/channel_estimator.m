@@ -1,8 +1,8 @@
-function [eq, updated_ch ] = channel_estimator( ch, r, pilots, pilots_pos, fd_sm_length, td_sm_factor, isQPSK_mode )
+function [eq, updated_ch, channel_estimator_state_new ] = channel_estimator( channel_estimator_state, r, pilots, pilots_pos, fd_sm_length, td_sm_factor, isQPSK_mode )
 % Produce and update the  channel responce
-% [eq, updated_ch ] = channel_estimator( ch, r, pilots, pilots_pos, fd_sm_length, td_sm_factor, isQPSK_mode )
+% [eq, updated_ch ] = channel_estimator( channel_estimator_state.ch, r, pilots, pilots_pos, fd_sm_length, td_sm_factor, isQPSK_mode )
 % Function inputs:
-%   ch - previous channel responce (frequency domain)
+%   channel_estimator_state.ch - previous channel responce (frequency domain)
 %   r  - received symbol, frequency domain
 %   pilots - set of pilots
 %   pilots_pos - position of pilots
@@ -27,7 +27,7 @@ function [eq, updated_ch ] = channel_estimator( ch, r, pilots, pilots_pos, fd_sm
 % and FEC decoding.
 %
 % This method can't be applied to QAM mode. To improve FEC decoding
-% we should use the abs of estimation of channel response (ch) as a factor
+% we should use the abs of estimation of channel response (channel_estimator_state.ch) as a factor
 % of reliability of a subcarrier. It should be combined with calculation of
 % soft metrics.
 
@@ -70,7 +70,7 @@ function [eq, updated_ch ] = channel_estimator( ch, r, pilots, pilots_pos, fd_sm
     w = hamming( fd_sm_length ); 
     w = w/sum(w); 
     
-    if(isempty(ch))      
+    if(isempty(channel_estimator_state.ch))      
        w = sqrt(2)*w; 
         % -- Add virtual pilot near DC for avoid dip in the channel estimation       
        tmp =  find(pilots_pos>512);    
@@ -84,13 +84,20 @@ function [eq, updated_ch ] = channel_estimator( ch, r, pilots, pilots_pos, fd_sm
     t = fix( fd_sm_length/2 ); 
     new_ch = new_ch( t+1:end-t); 
     
+    channel_estimator_state_new.phase_shift = 0;     
+    if ~isempty( channel_estimator_state.inst_ch )
+        channel_estimator_state_new.phase_shift = angle(channel_estimator_state.inst_ch' * new_ch); 
+    end
+    channel_estimator_state_new.inst_ch = new_ch; 
     
-    if(isempty(ch))
+    if(isempty(channel_estimator_state.ch))
         updated_ch = new_ch; 
     else
-        updated_ch = ch + (new_ch - ch)*td_sm_factor; 
+        updated_ch = channel_estimator_state.ch + (new_ch - channel_estimator_state.ch)*td_sm_factor; 
     end
-
+    
+    channel_estimator_state_new.ch = updated_ch; 
+    
 if isQPSK_mode==false
     % -- QAM mode 
     % max equalizer gain clipped to 40 dB

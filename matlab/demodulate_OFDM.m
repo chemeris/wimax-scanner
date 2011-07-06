@@ -25,6 +25,8 @@
 % The script is controlled structure "dem_params".
 
 % Set the parameters for channel estimator
+channel_estimator_state.ch = [];      % smoothed CIR
+channel_estimator_state.inst_ch = []; % instant CIR
 fd_sm_length = 51;
 td_sm_factor = 0.2;
 QPSK_mode = true; 
@@ -49,19 +51,22 @@ frame_fd = frame_fd_for_CFO.*exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).';
 
 %% find preamble index 
 if dem_params.preamble_idx < 0
-    [preamble_idx, id_cell, segment] = detect_preamble_fd(frame_fd, preamble_freq); 
+    [preamble_idx, id_cell, segment, int_cfo] = detect_preamble_fd(frame_fd, preamble_freq, 2); 
 
     params.preamble_idx =  preamble_idx; 
     params.id_cell  = id_cell; 
     params.segment  = segment; 
 end  
-%% Estimate CFO
-   cfo =  CFO_Estimator(frame_fd_for_CFO, segment, CFO_Estimator_params);  
+%% Estimate fractional part of the CFO      
+   cfo =  CFO_Estimator(frame_fd_for_CFO, segment+int_cfo, CFO_Estimator_params); 
+%   fprintf('cfo_frac = %f cfo_int = %d ', cfo, int_cfo); 
+% Add integer part of the CFO   
+   cfo = cfo+2*pi/1024*int_cfo;    
 %  cfo = cfo*1.25;  
 
 % Compensate the CFO for preamble
    frame_fd = fftshift( fft(frame_td .* exp(-1j * cfo * (0:1023)).'));
-   % Compensation of  the systematic timing offset 
+% Compensation of  the systematic timing offset 
    frame_fd = frame_fd .* exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).'; 
    carrier_phase = 0;
 
@@ -78,7 +83,7 @@ frame_fd = frame_fd.*exp(-1j*phase_trend*(1:params.Tb_samples)).';
 channel_fd = frame_fd .* conj(ref); 
 
 % estimate channel and equalizer responces in the frequency domain
-[f_eq, f_ch] = channel_estimator([], frame_fd, ref, nonzero_idx, ...
+[f_eq, f_ch, channel_estimator_state] = channel_estimator(channel_estimator_state, frame_fd, ref, nonzero_idx, ...
                     fd_sm_length, td_sm_factor, QPSK_mode); 
  
 % the timing_offset in samples for information only
@@ -103,13 +108,14 @@ descrambled_pilots = [];
 for j=1:num_ofdm_syms            
     frame_td =  rcvdDL(p: p + params.Tb_samples-1);
     %% Compensation of carrier offset     
-    carrier_phase = carrier_phase + params.Ts_samples*cfo;
+    carrier_phase = carrier_phase + params.Ts_samples * cfo;     
     frame_td = frame_td .* exp(-1j * (carrier_phase + cfo * (0:1023))).'; 
     
     %% -- convert a current frame to frequency domain     
     frame_fd = fft(frame_td); 
     frame_fd = fftshift(frame_fd); 
-    figure(13),     plot(500:520, abs(frame_fd(500:520))), hold on
+    
+%    figure(13),     plot(500:520, abs(frame_fd(500:520))), hold on
     
     %% -- correct timing offset
     frame_fd = frame_fd.*exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).';         
@@ -120,9 +126,11 @@ for j=1:num_ofdm_syms
     else
         current_pilots_ind = 1;         
     end
-    [f_eq, f_ch] = channel_estimator(f_ch, frame_fd, ...
+    [f_eq, f_ch, channel_estimator_state] = channel_estimator(channel_estimator_state, frame_fd, ...
         pilots(j, :).', params.pilot_shifted(current_pilots_ind,:).',...
-        fd_sm_length, td_sm_factor, QPSK_mode);         
+        fd_sm_length, td_sm_factor, QPSK_mode);      
+    %%  Correct CFO    
+    cfo = cfo + 0.7 * channel_estimator_state.phase_shift/params.Ts_samples; 
     %% --plot channel responce    
     figure(3), plot(1:1024, abs(frame_fd), '-b', 1:1024, abs(f_ch),'-r'); 
     title('Estimated channel responce'); 
@@ -155,7 +163,7 @@ for j=1:num_ofdm_syms
 %    carrier_phase = carrier_phase + frame_carrier_offset(i) * params.Ts_samples;  
 end    
 
-% figure(13), hold off
+
 %% calculate SNR for pilots
 var_pilots = var(descrambled_pilots); 
 mean_pilots = mean(descrambled_pilots); 
