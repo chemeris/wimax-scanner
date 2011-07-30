@@ -1,0 +1,67 @@
+Patch fixes a bug with incorrect display of Compressed UL-MAP after Compressed DL-MAP.
+Wrong length of items in wimax Compressed DL-MAP and UL-MAP.
+Link to Wireshark Bug Database - Bug 6067:
+https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=6067
+Index: plugins/wimax/msg_dlmap.c
+===================================================================
+--- plugins/wimax/msg_dlmap.c	(revision 36939)
++++ plugins/wimax/msg_dlmap.c	(working copy)
+@@ -2092,6 +2092,7 @@
+     /* if there is a compressed ul-map, also decode that and include in the length */
+     guint offset = 0;
+     proto_item *ti = NULL;
++    proto_item *ti_dlmap_ies = NULL;
+     proto_item *generic_item = NULL;
+     proto_tree *tree = NULL;
+     proto_tree *ie_tree = NULL;
+@@ -2137,8 +2138,8 @@
+     /* DL-MAP IEs */
+     length -= 15; /* remaining length in bytes (11 bytes above + CRC at end) */
+     if (dl_ie_count) {
+-        ti = proto_tree_add_text(tree, tvb, offset, length, "DL-MAP IEs (%d bytes)", length);
+-        ie_tree = proto_item_add_subtree(ti, ett_dlmap_ie);
++        ti_dlmap_ies = proto_tree_add_text(tree, tvb, offset, length, "DL-MAP IEs (%d bytes)", length);
++        ie_tree = proto_item_add_subtree(ti_dlmap_ies, ett_dlmap_ie);
+ 
+         length = BYTE_TO_NIB(mac_len - sizeof(mac_crc) - 1); /* convert length to nibbles */
+ 
+@@ -2153,6 +2154,17 @@
+     }
+ 
+     if (ulmap_appended) {
++        /* Replace the text of items to set the correct length in bytes.*/
++        proto_item_set_text(ti, "Compressed DL-MAP (%u bytes)", NIB_ADDR(nib));
++        proto_item_set_text(ti_dlmap_ies, "DL-MAP IEs (%u bytes)",NIB_ADDR(nib)- offset);
++
++        /* set the length of items */
++        proto_item_set_end(ti_dlmap_ies, tvb, NIB_ADDR(nib));
++        proto_item_set_end(ti, tvb, NIB_ADDR(nib));
++
++        /* update the info column */
++        col_append_sep_str(pinfo->cinfo, COL_INFO, NULL, "Compressed UL-MAP");
++
+         /* subtract 8 from lennib (CRC) */
+         nib += wimax_decode_ulmapc(base_tree, bufptr, nib, lennib - 8, tvb);
+     }
+Index: plugins/wimax/msg_ulmap.c
+===================================================================
+--- plugins/wimax/msg_ulmap.c	(revision 36939)
++++ plugins/wimax/msg_ulmap.c	(working copy)
+@@ -1960,7 +1960,7 @@
+     nib = offset;
+ 
+     /* display MAC UL-MAP */
+-    ti = proto_tree_add_protocol_format(base_tree, proto_mac_mgmt_msg_ulmap_decoder, tvb, NIBHI(offset,length), "Compressed UL-MAP");
++    ti = proto_tree_add_protocol_format(base_tree, proto_mac_mgmt_msg_ulmap_decoder, tvb, NIBHI(offset,length-offset), "Compressed UL-MAP (%u bytes)", NIB_ADDR(length-offset));
+     tree = proto_item_add_subtree(ti, ett_306);
+ 
+     /* Decode and display the UL-MAP */
+@@ -1974,7 +1974,7 @@
+     proto_tree_add_uint(tree, hf_ulmap_ofdma_sym, tvb, NIBHI(nib,2), data); /* added 2005 */
+     nib += 2;
+ 
+-    ti = proto_tree_add_text(tree, tvb, NIBHI(nib,length-nib), "UL-MAP IEs");
++    ti = proto_tree_add_text(tree, tvb, NIBHI(nib,length-nib), "UL-MAP IEs (%u bytes)", NIB_ADDR(length-nib));
+     ie_tree = proto_item_add_subtree(ti, ett_306_ul);
+     while (nib < length-1) {
+         nib += dissect_ulmap_ie(ie_tree, bufptr, nib, length-nib, tvb);

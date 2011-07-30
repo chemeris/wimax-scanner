@@ -1,3 +1,8 @@
+Integrate WiMax Protocol dissectors with GSMTAP.
+GSMTAP carries payload in various formats of WiMAX interfaces.
+It uses the wimax plugin to decode the WiMAX bursts.
+Link to Wireshark Bug Database - Bug 5964:
+https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=5964
 Index: epan/dissectors/packet-gsmtap.c
 ===================================================================
 --- epan/dissectors/packet-gsmtap.c	(revision 36939)
