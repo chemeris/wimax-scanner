@@ -31,17 +31,25 @@ if 0
     rcvdDL = resample(rcvdDL_16k, params.Fs, F_file);
     clear F_file rcvdDL_16k;
 else
-    fid = fopen('wimax_2647_11.2Msps_16.dat', 'rb');
-    in = fread(fid, 100e6, 'int16');
+    %fid = fopen('wimax_2647_11.2Msps_16.dat', 'rb'); % high SNR    
+    %fid = fopen('wimax_2667_11.2Msps_16.dat', 'rb'); % low SNR !
+    %fid = fopen('wimax-11.2M-2580-g30.cfile', 'rb'); 
+    fid = fopen('wimax-11.2M-2580-g30-crop.cfile', 'rb'); 
+    
+    
+    %fid = fopen('2647-2.pcm', 'rb');  
+    %fid = fopen('2667_11 (2).pcm', 'rb'); 
+    
+    in = fread(fid, 2e6, 'int16');
     fclose(fid);
 
     rcvdDL = in(1:2:end) + 1i.*in(2:2:end); 
     clear in fid;
 end
 
-frame = rcvdDL(42705:77e3);
-%preamble = frame(1:1500);
-
-figure ; spectrogram(frame, params.N_fft, 750, params.N_fft, params.Fs)
-figure ; plot(abs(frame))
-figure ; pwelch(frame, params.N_fft, 750, params.N_fft, params.Fs)
+if 0
+    frame = rcvdDL(42705:77e3);
+    figure ; spectrogram(frame, params.N_fft, 750, params.N_fft, params.Fs)
+    figure ; plot(abs(frame))
+    figure ; pwelch(frame, params.N_fft, 750, params.N_fft, params.Fs)
+end

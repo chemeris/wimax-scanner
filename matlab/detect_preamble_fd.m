@@ -1,5 +1,19 @@
-function [preamble_idx, id_cell, segment] = detect_preamble(sig_in, preamble_freq)
-% Determine 802.16e preamble index, IDcell and segment.
+function [preamble_idx, id_cell, segment, est_offset] = detect_preamble_fd(sig_in_freq_shifted, preamble_freq, max_offset)
+% Determine 802.16e preamble index, IDcell, segment, integer CFO.
+% Refer to "8.4.6.1.1 Preamble" of IEEE 802.16-2009 for details.
+% Same as detect_preamble but input is shifted result of FFT 
+%
+%[preamble_idx, id_cell, segment, est_offset] =
+%        detect_preamble_fd(sig_in_freq_shifted, preamble_freq, max_offset)
+% INPUTS:
+% sig_in_freq_shifted - input frame in frequency domain, shifted
+% preamble_freq - collection of all possibles preambles in freq. domain
+% max_offset  - abs of maximum expected carrier offset (fft bins), 
+% default zero
+% OUTPUTS:
+% ...
+% est_offset  - estimated integer offset of carrier
+
 % Copyright (C) 2011  Alexander Chemeris
 %
 % This library is free software; you can redistribute it and/or
@@ -17,35 +31,28 @@ function [preamble_idx, id_cell, segment] = detect_preamble(sig_in, preamble_fre
 % Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 % USA
 
-% Refer to "8.4.6.1.1 Preamble" of IEEE 802.16-2009 for details.
+if nargin < 3
+   max_offset = 0;  
+end
+
+num_preambles = size(preamble_freq, 1);
+pr_corr = zeros(num_preambles*(max_offset*2+1), 1);
 
 %% Detect preamble by correlation in frequency space.
 % Frequency space correlation gives us much better fidelity then
 % time space correlation.
 % TODO:: This could be greatly optimized knowing preambles structure.
-num_preambles = size(preamble_freq, 1);
-pr_corr = zeros(num_preambles, 1);
-sig_in_freq = fft(sig_in);
-
-%% this is needed for correct work with find_preamble .
-%this is NOT needed for work with search_preamble_corr.
-%sig_in_freq = sig_in_freq.*exp(1j*2*pi/1024*(128)/2*(1:1024)).'; 
-
-%% 
-% original version of metrics
-% for j = 1:num_preambles
-%     pr_corr(j) = sum(preamble_freq(j,:)'.*sig_in_freq); %original version 
-% end
-
-% another metrics for preamble detection
-% this is more robust to influence of the timing offset and channel
-% responce
-for j = 1:num_preambles
-    t = preamble_freq(j,:)'.*sig_in_freq;  
-    t = reshape(t, 32, length(t)/32); 
-    t = sum(t); 
-    pr_corr(j) = sum( abs(t) );     
+for n = -max_offset:max_offset
+    for j = 1:num_preambles
+        tmp  = fftshift(preamble_freq(j, :)); 
+        t = tmp(32:end-32-1)'.*sig_in_freq_shifted(32+n:end-32-1+n);  
+        t = reshape(t, 32, length(t)/32); 
+        t = sum(t); 
+        pr_corr(j+(max_offset+n)*num_preambles) = sum( abs(t) );     
+    end
 end
+
+%figure(13), plot(1:1024, 5E4*abs(fftshift(preamble_freq(1,:))'), 1:1024, abs(sig_in_freq_shifted)); 
 clear i sig_in_freq;
 
 % Different ways to get from complex values to real values.
@@ -53,12 +60,16 @@ clear i sig_in_freq;
 % minimal complexity.
 %pr_corr = abs(pr_corr);
 %pr_corr = real(pr_corr).*real(pr_corr) + imag(pr_corr).*imag(pr_corr);
-pr_corr = abs(real(pr_corr)) + abs(imag(pr_corr));
+%pr_corr = abs(real(pr_corr)) + abs(imag(pr_corr));
 
 %% Find preamble index
+
 [pr_corr_max PN_index] = max(pr_corr);
+est_offset = fix( (PN_index-1)/ num_preambles)-max_offset; 
+PN_index = 1+mod(PN_index-1, num_preambles); 
 preamble_idx = PN_index-1;
 %% Find IDcell and segment
+
 if preamble_idx < 96
     id_cell = mod(preamble_idx, 32);
     segment = floor(preamble_idx/32);
@@ -69,7 +80,7 @@ end
 
 %% Optionally plot correlations for all preambles
 if 1
-figure(15); hold on
+figure(2); hold on
 plot(pr_corr, 'g')
 plot(PN_index, pr_corr_max, 'ro')
 hold off
