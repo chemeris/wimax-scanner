@@ -58,17 +58,24 @@ plot(0,0, 'x');
 
 
 offset_timing_pos = 0; 
-for i = 1: length(frame_start_pos)
-    figure(1); hold on 
-    plot(frame_start_pos(i), 0, 'go'); 
-    hold off
+% frame_start_pos length will be changed inside of the loop, so we save its size
+max_frames = length(frame_start_pos);
+start_frame_pos = 1;
+frame_start_pos = frame_start_pos(start_frame_pos:end);
+frame_num = 1;
+for i = 1:max_frames
+    if 0
+        figure(1); hold on 
+        plot(frame_start_pos(frame_num), 0, 'go'); 
+        hold off
+    end
 
     
 %% setup params of OFDM demodulator
 % set frame start position  
-    dem_params.current_packet_start_pos =  frame_start_pos(i); 
+    dem_params.current_packet_start_pos =  frame_start_pos(frame_num); 
 % set estimated carrier offset    
-    dem_params.current_packet_cfo = frame_carrier_offset(i);  
+    dem_params.current_packet_cfo = frame_carrier_offset(frame_num);
 % set number of OFDM symbols for processing     
     dem_params.num_ofdm_syms = 4;
 % tell demodulator try  to detect the preamble
@@ -125,8 +132,13 @@ fprintf('preamble_idx = %d TO = %2.1f ', params.preamble_idx, timing_offset);
 % FCH is repeated twice for FFT sizes >128, so we can check that
 % we decoded it correctly:
 if ~all(FCH_decoded(1:24) == FCH_decoded(25:48))
-   fprintf('FCH decoding failed!\n');
-   continue;
+    % This is not a valid frame!
+    fprintf('FCH decoding failed!\n');
+
+    frame_start_pos(frame_num) = []; 
+    frame_carrier_offset(frame_num) = [];
+
+    continue;
 end
 
 % Estimate the number of incorrectly received bits by encoding FCH again
@@ -138,19 +150,19 @@ clear recode% FCH_errors;
 
 %% Print FCH bits
 fid = fopen('bit.txt', 'a'); 
-fprintf(fid, '%d FCH 4 ', i); % FCH occupies 4 subchannels 
+fprintf(fid, '%d FCH 4 ', frame_num); % FCH occupies 4 subchannels 
 fprintf(fid, '%d', FCH_decoded(1:24)); 
 fprintf(fid, '\n'); 
 fclose(fid); 
 
 %% Plot found frame and optionally save it to a file
 if 0
-    p = frame_start_pos(i);
+    p = frame_start_pos(frame_num);
     % We assume 5 ms frame here
     h = figure(7) ; spectrogram(rcvdDL(p:p+params.Fs*0.005-1), params.N_fft, 750, params.N_fft, params.Fs);
     if 0
         % Save to frame_xxx.png
-        print(h, ['frame_' sprintf('%03d', i) '.png'], '-dpng');
+        print(h, ['frame_' sprintf('%03d', frame_num) '.png'], '-dpng');
     end
 end
 
@@ -213,13 +225,15 @@ end
     fprintf('Errors in FCH: %d  Errors in DL-MAP = %d DL_MAP_SNR=%2.1f dB G=%1.2E Phi=%2.1f degrees CFO/dF=%1.3f', FCH_errors, number_of_errors_in_DL_MAP,  DL_MAP_SNR, abs(e), angle(e)/pi*180, cfo/(2*pi/1024));     
 
     fid = fopen('bit.txt', 'a'); 
-    fprintf(fid, '%d DL-MAP %02d ', i, DL_Map_Length); 
+    fprintf(fid, '%d DL-MAP %02d ', frame_num, DL_Map_Length); 
     fprintf(fid, '%d', info); 
     fprintf(fid, '\n'); 
     fclose(fid); 
 
     %% Done with this frame
     fprintf('\n');
+    % Move to the next frame
+    frame_num = frame_num+1;
 
     pause(0.2); 
 end
