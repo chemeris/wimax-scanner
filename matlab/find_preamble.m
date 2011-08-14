@@ -31,9 +31,9 @@ norm_acf = [];
 
 d = round(1024/3); 
 
-threshold = 0.7; 
+%threshold = 0.7; 
 %threshold = 0.65; 
-%threshold = 0.5; 
+threshold = 0.5;
 NN = length(s) - params.Ts_samples ; 
 detector_delay = d; 
 
