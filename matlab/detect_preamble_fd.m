@@ -42,6 +42,9 @@ pr_corr = zeros(num_preambles*(max_offset*2+1), 1);
 % Frequency space correlation gives us much better fidelity then
 % time space correlation.
 % TODO:: This could be greatly optimized knowing preambles structure.
+%
+% We iterate through all possible integer offsets to find the one with
+% the highest correlation.
 for n = -max_offset:max_offset
     for j = 1:num_preambles
         tmp  = fftshift(preamble_freq(j, :)); 
@@ -64,15 +67,19 @@ clear i sig_in_freq;
 
 %% Find preamble index
 
-[pr_corr_max PN_index] = max(pr_corr);
-est_offset = fix( (PN_index-1)/ num_preambles)-max_offset; 
-PN_index = 1+mod(PN_index-1, num_preambles); 
+[pr_corr_max pr_corr_max_index] = max(pr_corr);
+est_offset = fix( (pr_corr_max_index-1)/ num_preambles)-max_offset; 
+PN_index = 1+mod(pr_corr_max_index-1, num_preambles); 
 preamble_idx = PN_index-1;
 
 %% Optionally plot correlations for all preambles
 if 1
 figure(2); hold on
+ylim([0, pr_corr_max*1.2])
+for n = 1:2*max_offset
+    plot([num_preambles*n;num_preambles*n], [0, pr_corr_max*1.2],'--', 'color',[0.5 0.5 0.5])
+end
 plot(pr_corr, 'g')
-plot(PN_index, pr_corr_max, 'ro')
+plot(pr_corr_max_index, pr_corr_max, 'ro')
 hold off
 end
