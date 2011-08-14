@@ -1,4 +1,4 @@
-function [preamble_idx, id_cell, segment, est_offset] = detect_preamble_fd(sig_in_freq_shifted, preamble_freq, max_offset)
+function [preamble_idx, est_offset] = detect_preamble_fd(sig_in_freq_shifted, preamble_freq, max_offset)
 % Determine 802.16e preamble index, IDcell, segment, integer CFO.
 % Refer to "8.4.6.1.1 Preamble" of IEEE 802.16-2009 for details.
 % Same as detect_preamble but input is shifted result of FFT 
@@ -68,15 +68,6 @@ clear i sig_in_freq;
 est_offset = fix( (PN_index-1)/ num_preambles)-max_offset; 
 PN_index = 1+mod(PN_index-1, num_preambles); 
 preamble_idx = PN_index-1;
-%% Find IDcell and segment
-
-if preamble_idx < 96
-    id_cell = mod(preamble_idx, 32);
-    segment = floor(preamble_idx/32);
-else
-    id_cell = preamble_idx-96;
-    segment = mod(preamble_idx-96, 3);
-end
 
 %% Optionally plot correlations for all preambles
 if 1

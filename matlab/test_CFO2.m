@@ -93,7 +93,8 @@ end
                  frame_fd = frame_fd.*exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).'; 
 
 
-                [preamble_idx, id_cell, segment] = detect_preamble_fd(frame_fd, preamble_freq); 
+                [preamble_idx] = detect_preamble_fd(frame_fd, preamble_freq); 
+                [id_cell, segment] = decode_preamble_idx(preamble_idx); 
                 if ((k-1) ~= preamble_idx)
                    % fprintf('\rtotal=%d error detected = %d, actually = %d ',total_cnt, preamble_idx ,k-1); 
                     err_cnt = err_cnt+1;             

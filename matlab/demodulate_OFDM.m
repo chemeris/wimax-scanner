@@ -51,14 +51,18 @@ frame_fd = frame_fd_for_CFO.*exp(1j*2*pi/1024*(params.Tg_samples)/2*(1:1024)).';
 
 %% find preamble index 
 if dem_params.preamble_idx < 0
-    [preamble_idx, id_cell, segment, int_cfo] = detect_preamble_fd(frame_fd, preamble_freq, 2); 
+    [params.preamble_idx, int_cfo] = detect_preamble_fd(frame_fd, preamble_freq, 2); 
+else
+    params.preamble_idx = dem_params.preamble_idx;
+    % TODO: This is a quick hack and we should really detect it here.
+    int_cfo = 0;
+end
 
-    params.preamble_idx =  preamble_idx; 
-    params.id_cell  = id_cell; 
-    params.segment  = segment; 
-end  
+%% Find IDcell and segment
+[params.id_cell params.segment] = decode_preamble_idx(params.preamble_idx);
+
 %% Estimate fractional part of the CFO      
-   cfo =  CFO_Estimator(frame_fd_for_CFO, segment+int_cfo, CFO_Estimator_params); 
+   cfo =  CFO_Estimator(frame_fd_for_CFO, params.segment+int_cfo, CFO_Estimator_params); 
 %   fprintf('cfo_frac = %f cfo_int = %d ', cfo, int_cfo); 
 % Add integer part of the CFO   
    cfo = cfo+2*pi/1024*int_cfo;    
