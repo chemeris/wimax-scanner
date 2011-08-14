@@ -31,21 +31,21 @@ CFO_Estimator_params = CFO_Estimator_Init(-pi*1.1/1024, pi*1.1/1024, 9, 7);
 
 %% Get data
 read_2647
-%% hard distortions in the channel 
-% h = zeros(127,1); 
-% h(1) = 1; 
-% h(60)=1; 
-% rcvdDL = conv(h, rcvdDL); 
-%% add noise to signal 
-% v = 1/sqrt(2)*std(rcvdDL); 
-% v = v * sqrt(4); 
-% rcvdDL = rcvdDL + v * (randn(length(rcvdDL),1) + 1j*randn(length(rcvdDL),1) ); 
+%% hard distortions in the channel
+% h = zeros(127,1);
+% h(1) = 1;
+% h(60)=1;
+% rcvdDL = conv(h, rcvdDL);
+%% add noise to signal
+% v = 1/sqrt(2)*std(rcvdDL);
+% v = v * sqrt(4);
+% rcvdDL = rcvdDL + v * (randn(length(rcvdDL),1) + 1j*randn(length(rcvdDL),1) );
 
 %% Find frame start position and frame carrier offset
 [frame_start_pos, frame_carrier_offset] = find_preamble(params, rcvdDL);
 
 %% Process frames in a loop
-offset_timing_pos = 0; 
+offset_timing_pos = 0;
 % frame_start_pos length will be changed inside of the loop, so we save its size
 max_frames = length(frame_start_pos);
 start_frame_pos = 1;
@@ -53,26 +53,26 @@ frame_start_pos = frame_start_pos(start_frame_pos:end);
 frame_num = 1;
 for i = 1:max_frames
     if 0
-        figure(1); hold on 
-        plot(frame_start_pos(frame_num), 0, 'go'); 
+        figure(1); hold on
+        plot(frame_start_pos(frame_num), 0, 'go');
         hold off
     end
 
-    
+
     %% setup params of OFDM demodulator
-    % set frame start position  
-    dem_params.current_packet_start_pos =  frame_start_pos(frame_num); 
-    % set estimated carrier offset    
+    % set frame start position
+    dem_params.current_packet_start_pos =  frame_start_pos(frame_num);
+    % set estimated carrier offset
     dem_params.current_packet_cfo = frame_carrier_offset(frame_num);
-    % set number of OFDM symbols for processing     
+    % set number of OFDM symbols for processing
     dem_params.num_ofdm_syms = 4;
     % tell demodulator try  to detect the preamble
     % if case dem_params.preamble_idx > 1 then detection of the preamble will
     % not be made
-    dem_params.preamble_idx = -1; 
-    
+    dem_params.preamble_idx = -1;
+
     %  detect preamble, demodulate, equalizate
-    %  produce syms_fft_eq 
+    %  produce syms_fft_eq
     demodulate_OFDM
 
 
@@ -83,24 +83,24 @@ for i = 1:max_frames
     FCH_qpsk_symbols = get_slot_data(syms_fft_eq, params.segment*10, ...
                                      params.FCH_repetitions, 2, params);
 
-    FCH_qpsk_symbols = conj(FCH_qpsk_symbols);  
+    FCH_qpsk_symbols = conj(FCH_qpsk_symbols);
     if 1
         % try average all 4 repetitions
-        avr_QPSK = mean(FCH_qpsk_symbols); 
-        avr_QPSK = avr_QPSK/mean(abs(avr_QPSK)); 
+        avr_QPSK = mean(FCH_qpsk_symbols);
+        avr_QPSK = avr_QPSK/mean(abs(avr_QPSK));
 
         % adding noise for decoder test
         if 0
-            std_sig = std( avr_QPSK ); 
-            noise = 0.6*std_sig*(randn(1, length(avr_QPSK)) + 1j * randn(1, length(avr_QPSK)));    
+            std_sig = std( avr_QPSK );
+            noise = 0.6*std_sig*(randn(1, length(avr_QPSK)) + 1j * randn(1, length(avr_QPSK)));
             SNR = 10*log10(var(avr_QPSK)/var(noise));
-            avr_QPSK = avr_QPSK +noise; 
+            avr_QPSK = avr_QPSK +noise;
         end
         FCH_demod_bits_best = demodulate_QPSK( avr_QPSK );
     else
         %% Demodulate 4 repetitions of FCH into an array of (soft) bits
-        FCH_qpsk_symbols = FCH_qpsk_symbols/mean(mean(abs(FCH_qpsk_symbols))); 
-        FCH_demod_bits_best = FCH_demod(params.FCH_repetitions, FCH_qpsk_symbols);   
+        FCH_qpsk_symbols = FCH_qpsk_symbols/mean(mean(abs(FCH_qpsk_symbols)));
+        FCH_demod_bits_best = FCH_demod(params.FCH_repetitions, FCH_qpsk_symbols);
     end
 
 
@@ -114,7 +114,7 @@ for i = 1:max_frames
     % We can also use hard decision this way:
 %    FCH_decoded = decode_CC_tail_biting(FCH_deinterleaved<0, 'hard');
 
-    fprintf('preamble_idx = %d TO = %2.1f ', params.preamble_idx, timing_offset); 
+    fprintf('preamble_idx = %d TO = %2.1f ', params.preamble_idx, timing_offset);
     %% Check FCH correctness and estimate BER
     % FCH is repeated twice for FFT sizes >128, so we can check that
     % we decoded it correctly:
@@ -122,7 +122,7 @@ for i = 1:max_frames
         % This is not a valid frame!
         fprintf('FCH decoding failed!\n');
 
-        frame_start_pos(frame_num) = []; 
+        frame_start_pos(frame_num) = [];
         frame_carrier_offset(frame_num) = [];
 
         continue;
@@ -136,11 +136,11 @@ for i = 1:max_frames
     clear recode% FCH_errors;
 
     %% Save FCH bits to a file
-    fid = fopen('bit.txt', 'a'); 
-    fprintf(fid, '%d FCH 4 ', frame_num); % FCH occupies 4 subchannels 
-    fprintf(fid, '%d', FCH_decoded(1:24)); 
-    fprintf(fid, '\n'); 
-    fclose(fid); 
+    fid = fopen('bit.txt', 'a');
+    fprintf(fid, '%d FCH 4 ', frame_num); % FCH occupies 4 subchannels
+    fprintf(fid, '%d', FCH_decoded(1:24));
+    fprintf(fid, '\n');
+    fclose(fid);
 
     %% Plot found frame and optionally save it to a file
     if 0
@@ -164,7 +164,7 @@ for i = 1:max_frames
     end
     DL_MAP_length_sym = ceil(DL_Map_Length/params.N_subchannels);
 
-    %% Extract DL-MAP 
+    %% Extract DL-MAP
     % DL-MAP is the first slot after FCH, so we should skip 4 subchannels
     % of FCH
     dl_map_not_averaged = PDU_extract(DL_Map_Repetition, 4, DL_Map_Length, ...
@@ -172,54 +172,55 @@ for i = 1:max_frames
                                       DL_MAP_length_sym, params.N_subchannels, ...
                                       syms_fft_eq, params);
 
-    if DL_Map_Repetition > 1    
+    if DL_Map_Repetition > 1
         % Average all DL-MAP repititions
-        dl_map_qpsk = sum(dl_map_not_averaged); 
+        dl_map_qpsk = sum(dl_map_not_averaged);
     else
-        dl_map_qpsk = dl_map_not_averaged; 
+        dl_map_qpsk = dl_map_not_averaged;
     end
 
-    if 0    
-        figure(11); 
-        plot(dl_map_qpsk, 'o'), title('averaged repetitions of DL_MAP'); 
+    if 0
+        figure(11);
+        plot(dl_map_qpsk, 'o'), title('averaged repetitions of DL_MAP');
     end
 
     %% Decode DL-MAP burst to bits
     % True CTC turbo decoder
     [info, recoded_info, number_of_errors_in_DL_MAP] = ...
-                    CTC_Decode_Blocks(dl_map_qpsk, 'QPSK_1/2', CTC_params );    
+                    CTC_Decode_Blocks(dl_map_qpsk, 'QPSK_1/2', CTC_params );
 
-    %% Estimate SNR         
-    % Convert bits to QPSK symbols   
-    recoded_DL_MAP = sqrt(1/2)*((1-2*recoded_info(1:2:end)) + 1j*(1-2*recoded_info(2:2:end))); 
+    %% Estimate SNR
+    % Convert bits to QPSK symbols
+    recoded_DL_MAP = sqrt(1/2)*((1-2*recoded_info(1:2:end)) + 1j*(1-2*recoded_info(2:2:end)));
     if 0
-        figure(11),  plot(dl_map_not_averaged.', 'o'), title('not averaged DL_MAP');   
-    end    
-    e = dl_map_not_averaged * recoded_DL_MAP';   
-    e = sum(e)/(DL_Map_Repetition*length(recoded_DL_MAP)); 
-    
+        figure(11),  plot(dl_map_not_averaged.', 'o'), title('not averaged DL_MAP');
+    end
+    e = dl_map_not_averaged * recoded_DL_MAP';
+    e = sum(e)/(DL_Map_Repetition*length(recoded_DL_MAP));
+
     % Adjust phase and amplitude of reference sequence
-    recoded_DL_MAP = e * recoded_DL_MAP; 
+    recoded_DL_MAP = e * recoded_DL_MAP;
     % Substract recoded DL MAP
     for k=1:DL_Map_Repetition
-         dl_map_not_averaged(k,:)  = dl_map_not_averaged(k,:) - recoded_DL_MAP;          
-    end    
-    dl_map_not_averaged = reshape( dl_map_not_averaged.', DL_Map_Repetition*length(recoded_DL_MAP), 1); 
-    DL_MAP_SNR = -20*log10(std(dl_map_not_averaged)/(DL_Map_Repetition*std(recoded_DL_MAP)));     
+         dl_map_not_averaged(k,:)  = dl_map_not_averaged(k,:) - recoded_DL_MAP;
+    end
+    dl_map_not_averaged = reshape( dl_map_not_averaged.', DL_Map_Repetition*length(recoded_DL_MAP), 1);
+    DL_MAP_SNR = -20*log10(std(dl_map_not_averaged)/(DL_Map_Repetition*std(recoded_DL_MAP)));
 
     %% Print status and save DL-MAP bits to a file
-    fprintf('Errors in FCH: %d  Errors in DL-MAP = %d DL_MAP_SNR=%2.1f dB G=%1.2E Phi=%2.1f degrees CFO/dF=%1.3f', FCH_errors, number_of_errors_in_DL_MAP,  DL_MAP_SNR, abs(e), angle(e)/pi*180, cfo/(2*pi/1024));     
+    fprintf('Errors in FCH: %d  Errors in DL-MAP = %d DL_MAP_SNR=%2.1f dB G=%1.2E Phi=%2.1f degrees CFO/dF=%1.3f', FCH_errors, number_of_errors_in_DL_MAP,  DL_MAP_SNR, abs(e), angle(e)/pi*180, cfo/(2*pi/1024));
 
-    fid = fopen('bit.txt', 'a'); 
-    fprintf(fid, '%d DL-MAP %02d ', frame_num, DL_Map_Length); 
-    fprintf(fid, '%d', info); 
-    fprintf(fid, '\n'); 
-    fclose(fid); 
+    fid = fopen('bit.txt', 'a');
+    fprintf(fid, '%d DL-MAP %02d ', frame_num, DL_Map_Length);
+    fprintf(fid, '%d', info);
+    fprintf(fid, '\n');
+    fclose(fid);
 
     %% Done with this frame
     fprintf('\n');
     % Move to the next frame
     frame_num = frame_num+1;
 
-    pause(0.2); 
+    pause(0.2);
 end
+
