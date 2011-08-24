@@ -24,9 +24,9 @@
 // Usage:
 //   cat bits.txt | ./dlmap-parse
 
-// If this DIUC_0_OUTPUT is defined, then output is in TSV format,
+// If this TSV_OUTPUT is defined, then output is in TSV format,
 // ready to be used by do_PDU_extract.m script as input.
-//#define DIUC_0_OUTPUT
+//#define TSV_OUTPUT
 
 unsigned bits2unsigned(char *bits, size_t bits_num)
 {
@@ -47,8 +47,8 @@ int parse_dlmap_ie(unsigned burst_num, char *bits, size_t bits_num)
     if (bits_num < 4) return -1;
     diuc = bits2unsigned(bits, 4);
     bits_parsed = 4;
-#ifndef DIUC_0_OUTPUT
-    printf("DIUC: %d", diuc);
+#ifndef TSV_OUTPUT
+    printf("%d DIUC %d:", burst_num, diuc);
 #endif
     if (diuc == 15)
     {
@@ -79,17 +79,17 @@ int parse_dlmap_ie(unsigned burst_num, char *bits, size_t bits_num)
         {
             repetition = repetition*2;
         }
-#ifndef DIUC_0_OUTPUT
+#ifndef TSV_OUTPUT
         printf("  offset: %d sym + %d subch  len: %d sym + %d subch   repetition: %d   boosting: %d",
                symbol_offset, subchannel_offset, symbols_num, subchannels_num, repetition, boosting);
 #else
-        printf("%d %d %d %d %d %d %d\n",
-               burst_num, symbol_offset, subchannel_offset, symbols_num, subchannels_num, repetition, boosting);
+        printf("%d %d %d %d %d %d %d %d\n",
+               burst_num, diuc, symbol_offset, subchannel_offset, symbols_num, subchannels_num, repetition, boosting);
 #endif
         bits_parsed += 32;
     }
 
-#ifndef DIUC_0_OUTPUT
+#ifndef TSV_OUTPUT
     printf(" parsed: %d bits/%d nibles\n", bits_parsed, bits_parsed/4);
 #endif
 
@@ -111,7 +111,7 @@ int parse_dlmap(unsigned burst_num, char *bits, size_t bits_num)
     if (bits_num < dlmap_length*8) return -1;
     // -- DL-MAP IE Count
     ie_count = bits2unsigned(&bits[80], 8);
-#ifndef DIUC_0_OUTPUT
+#ifndef TSV_OUTPUT
     printf(" length = %d, IE Count = %d\n", dlmap_length, ie_count);
 #endif
 
@@ -202,7 +202,7 @@ int main()
         // Convert DL-MAP from string to bits
         //
         if (strcmp(burst_type_str, "DL-MAP") != 0) continue;
-#ifndef DIUC_0_OUTPUT
+#ifndef TSV_OUTPUT
         printf("%d DL-MAP", burst_num);
 #endif
         char burst_bits[10240];
