@@ -33,28 +33,20 @@ d = round(1024/3);
 
 %threshold = 0.7; 
 %threshold = 0.65; 
-threshold = 0.5;
-NN = length(s) - params.Ts_samples ; 
+threshold = 0.6;
 detector_delay = d; 
 
-
-del_left_centre = zeros(1, d); 
-del_centre_right = zeros(1, d); 
-del_en_left = zeros(1, d); 
 en_centre = zeros(1, d); 
 en_right = zeros(1, d); 
 del_r = zeros(1, d); 
 del_en =zeros(1, d);  
 
-R_ref = zeros(1, NN); 
 R = zeros(1,length(s)); 
 R(1) = 0; 
 
 
 %sliding window implementation of this 
 k = 1; 
-total_energy = 0; 
-total_r      =0;  
 r=0; 
 en=0; 
 while k < length(s)-4*d 
@@ -105,27 +97,15 @@ for i=1:length(R)
         end
     end
 end
-if 0
-figure(1); 
-plot(abs(R)); 
-hold on 
-plot(frame_start_pos, abs(R(frame_start_pos)), 'rx'); 
 
-hold off
+
+if 0
+    figure(1); 
+    plot(abs(R)); 
+    hold on 
+    plot(frame_start_pos, abs(R(frame_start_pos)), 'rx'); 
+    hold off
 end
+
 %frame_start_pos
 frame_carrier_offset = angle( R(frame_start_pos) )/d;  
-
-% for n = 1:200000 %NN
-%     left   = s(n     :n+d-1   ).';     
-%     centre = s(n+d   :n+2*d-1 ).'; 
-%     right =  s(n+2*d :n+3*d-1 ).';     
-%     R_ref(n) = 2*(centre * left' +  right  * centre') /(2*centre*centre' + left*left' + right*right');         
-% end
-% R_ref = conv( 1/params.Tg_samples * ones(1,params.Tg_samples), R_ref); 
-% R_ref(1:params.Tg_samples/2) = []; 
-% figure(1); 
-% plot( 1:200000, abs(R_ref(1:200000)), 1:length(R), abs(R) ); 
-% 
-
-
