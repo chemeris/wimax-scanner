@@ -1,6 +1,20 @@
-
 function [decoded_info, quality] = CTC_Decoder(codeword, NumIter,Modulation_CodeRate, CTC_params)
 % This implementation the turbo decoder of the CTC.
+%[decoded_info, quality] = CTC_Decoder(codeword, NumIter, Modulation_CodeRate, CTC_params)
+%
+% Function parameters:
+%   codeword - input row vector of metrics;
+%   NumIter - number of iterations;
+%   Modulation_CodeRate - valid valies is 'QPSK_1/2','QPSK_3/4',
+%                                       '16-QAM_1/2','16-QAM_3/4','64-QAM_1/2',
+%                                       '64-QAM_2/3','64-QAM_3/4','64-QAM_3/4',
+%                                       '64-QAM_5/6','64-QAM_5/6'; 
+%   CTC_params  - various tables fot CTC encoder(decoder). 
+%
+% Refer to "Turbo Coding, Turbo Equalisation and Space-Time Coding"
+% by L. Hanzo, T.H. Liew, B.L. Yeap
+% 
+
 % Copyright (C) 2011  Alexey Ostapenko
 %
 % This library is free software; you can redistribute it and/or
@@ -17,20 +31,7 @@ function [decoded_info, quality] = CTC_Decoder(codeword, NumIter,Modulation_Code
 % License along with this library; if not, write to the Free Software
 % Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 % USA
-%
-%[decoded_info, quality] = CTC_Decoder(codeword, NumIter, Modulation_CodeRate, CTC_params)
-% Function parameters:
-%   codeword - input row vector of metrics;
-%   NumIter - number of iterations;
-%   Modulation_CodeRate - valid valies is 'QPSK_1/2','QPSK_3/4',
-%                                       '16-QAM_1/2','16-QAM_3/4','64-QAM_1/2',
-%                                       '64-QAM_2/3','64-QAM_3/4','64-QAM_3/4',
-%                                       '64-QAM_5/6','64-QAM_5/6'; 
-%   CTC_params  - various tables fot CTC encoder(decoder). 
-%
-% Refer to "Turbo Coding, Turbo Equalisation and Space-Time Coding"
-% by L. Hanzo, T.H. Liew, B.L. Yeap
-% 
+
      
 %% Find parameters N,P.
     num_in_bits = length(codeword);      

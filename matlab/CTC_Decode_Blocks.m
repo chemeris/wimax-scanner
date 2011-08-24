@@ -1,6 +1,19 @@
 function [info, recoded_info, num_errors] = CTC_Decode_Blocks(x,  Modulation_CodeRate, CTC_params) 
-% Divide the input into blocks, compute the metric bits, 
-% perform the turbo decoding.
+% Divide the input into blocks, compute the metric bits, perform the turbo decoding.
+% [info, recoded_info, num_errors] = CTC_Decode_Blocks(x,  Modulation_CodeRate, CTC_params)
+%
+% Function parameters:
+%   x - input row vector of complex samples,
+%   Modulation_CodeRate - valid valies is 'QPSK_1/2','QPSK_3/4',
+%                                       '16-QAM_1/2','16-QAM_3/4',
+%                                       '64-QAM_1/2','64-QAM_2/3',
+%                                       '64-QAM_3/4','64-QAM_5/6'; 
+%   CTC_params  - various tables for CTC encoder(decoder). 
+% Function outputs:
+%   info - decoded and descrambled bits of information
+%   recoded_info - scrambled and encoded info
+
+
 % Copyright (C) 2011  Alexey Ostapenko
 %
 % This library is free software; you can redistribute it and/or
@@ -17,18 +30,6 @@ function [info, recoded_info, num_errors] = CTC_Decode_Blocks(x,  Modulation_Cod
 % License along with this library; if not, write to the Free Software
 % Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 % USA
-%
-% [info, recoded_info, num_errors] = CTC_Decode_Blocks(x,  Modulation_CodeRate, CTC_params)
-% Function parameters:
-%   x - input row vector of complex samples,
-%   Modulation_CodeRate - valid valies is 'QPSK_1/2','QPSK_3/4',
-%                                       '16-QAM_1/2','16-QAM_3/4','64-QAM_1/2',
-%                                       '64-QAM_2/3','64-QAM_3/4','64-QAM_3/4',
-%                                       '64-QAM_5/6','64-QAM_5/6'; 
-%   CTC_params  - various tables for CTC encoder(decoder). 
-% Function outputs:
-%   info - decoded and descrambled bits of information
-%   recoded_info - scrambled and encoded info
 
 
 
