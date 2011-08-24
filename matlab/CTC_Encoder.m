@@ -41,6 +41,7 @@ function [encoded_AB]  = CTC_Encoder(AB, Modulation_CodeRate, CTC_params )
    for i = 2:NumModes
        if isequal( CTC_params.CTC_channel_coding_per_modulation{i,1}, Modulation_CodeRate) &&...
            (CTC_params.CTC_channel_coding_per_modulation{i,2} == num_in_bytes)
+            num_out_bytes = CTC_params.CTC_channel_coding_per_modulation{i, 3}; 
             N = CTC_params.CTC_channel_coding_per_modulation{i, 4}; 
             P = CTC_params.CTC_channel_coding_per_modulation{i, 5}; 
             break; 
@@ -100,6 +101,9 @@ parity_bits = zeros(1, N*2);
 parity_bits(1:2:end) = Y1; 
 parity_bits(2:2:end) = Y2; 
 
+%% Return only as many parity bits as we need to achieve requested coding speed 
+num_parity_bits = (num_out_bytes - num_in_bytes)*8;
+parity_bits = parity_bits (1:num_parity_bits);
 
 encoded_AB = [subblock_interleaver(AB(1:2:end), N, m, J), subblock_interleaver(AB(2:2:end), N, m, J),  parity_bits];
 

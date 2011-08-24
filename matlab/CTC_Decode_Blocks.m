@@ -40,6 +40,8 @@ end
 if (isequal(Modulation_CodeRate, 'QPSK_1/2'))
 % Refer to "Table 501—Encoding slot concatenation for different rates in CTC"    
     j = 10;         
+elseif (isequal(Modulation_CodeRate, 'QPSK_3/4'))
+    j = 6;         
 else    
     error([Modulation_CodeRate, ' not implemented yet']); 
 end
