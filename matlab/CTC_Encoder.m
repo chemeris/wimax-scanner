@@ -76,13 +76,13 @@ AB = bitxor(AB, prbs);
 AB_interleaved =  CTC_interleaver(AB, P); 
 Nmod7 = mod(N, 7); 
 
-[Y1, W1, S0N_1] = CTC_ConstituentEncoder(AB, 0);
+[~, ~, S0N_1] = CTC_ConstituentEncoder(AB, 0);
 S = Sc_lookup_table(Nmod7, S0N_1+1); 
 
 [Y1, W1, Slast1] = CTC_ConstituentEncoder(AB, S);
 %Sdiff1 = S - Slast1 
 
-[Y2, W2, S0N_1] = CTC_ConstituentEncoder(AB_interleaved, 0);
+[~, ~, S0N_1] = CTC_ConstituentEncoder(AB_interleaved, 0);
 S = Sc_lookup_table(Nmod7, S0N_1+1);
 
 [Y2, W2, Slast2] = CTC_ConstituentEncoder(AB_interleaved, S);
