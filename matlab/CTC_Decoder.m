@@ -63,7 +63,7 @@ function [decoded_info, quality] = CTC_Decoder(codeword, NumIter,Modulation_Code
   
 %% Build the deinterleaving table.
 tmp = subblock_interleaver((0:N-1), N, m, J); 
-[tmp, deintr_tab] =sort(tmp); 
+[~, deintr_tab] = sort(tmp); 
 
 
 %% Prepare to deinterleaving.
