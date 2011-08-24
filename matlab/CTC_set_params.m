@@ -1,5 +1,5 @@
 %function [] = CTC_find_params()
-% Refer to table 504 - CTC channel coding per modulation
+% Refer to table 502 - CTC channel coding per modulation
 CTC_params.CTC_channel_coding_per_modulation = ...
 {   'Modulation, Code rate', 'Data_block_size','Enc_data_block_size', 'N', 'P'
     'QPSK_1/2'     6  12      24  [5 0 0 0           ]
