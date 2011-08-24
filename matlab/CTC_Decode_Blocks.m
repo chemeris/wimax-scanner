@@ -37,8 +37,8 @@ if n*48~=length(x)
     error('Length x must be divisible by 48'); 
 end
 
+% Refer to "Table 501 Encoding slot concatenation for different rates in CTC"    
 if (isequal(Modulation_CodeRate, 'QPSK_1/2'))
-% Refer to "Table 501—Encoding slot concatenation for different rates in CTC"    
     j = 10;         
 elseif (isequal(Modulation_CodeRate, 'QPSK_3/4'))
     j = 6;         
@@ -49,7 +49,7 @@ blks_size = []; % blocks size (in slots)
 
 
 %%  Find number and sizes of the blocks
-%Refer to Table 500—Slots concatenation rule for CTC.
+%Refer to Table 500 Slots concatenation rule for CTC.
 k = floor(n/j); 
 m = mod(n,j); 
 if n==7
