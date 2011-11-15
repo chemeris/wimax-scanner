@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wimax_vc", "wimax_vc.vcproj", "{080D2063-C14C-41E7-8269-FC18E71AF2DF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{080D2063-C14C-41E7-8269-FC18E71AF2DF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{080D2063-C14C-41E7-8269-FC18E71AF2DF}.Debug|Win32.Build.0 = Debug|Win32
+		{080D2063-C14C-41E7-8269-FC18E71AF2DF}.Release|Win32.ActiveCfg = Release|Win32
+		{080D2063-C14C-41E7-8269-FC18E71AF2DF}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
