@@ -23,7 +23,7 @@
 #define _CIC_FLT_H_
 
 #include <assert.h>
-#include "Complex.h"
+#include "complex.h"
 
 template<class tCicDataType> class tCIC_flt 
 {

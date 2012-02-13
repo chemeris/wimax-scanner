@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wimax_rec", "wimax_rec.vcproj", "{1F3B74B3-A342-4E42-8714-52EFBEF2D7C8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1F3B74B3-A342-4E42-8714-52EFBEF2D7C8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1F3B74B3-A342-4E42-8714-52EFBEF2D7C8}.Debug|Win32.Build.0 = Debug|Win32
+		{1F3B74B3-A342-4E42-8714-52EFBEF2D7C8}.Release|Win32.ActiveCfg = Release|Win32
+		{1F3B74B3-A342-4E42-8714-52EFBEF2D7C8}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -77,20 +77,40 @@ tWiMax_Dem::tWiMax_Dem(tWiMax_Params *params)
 	m_stored_energy = 0;
 	m_fp_threshold = 0.5; 
 	m_pd_counter = 0; 
+	FFT_Init( &m_fft_state ); 
+	m_pWimaxDecoders = NULL; 
 
+	int j; 
+	Complex<float> zero(0); 
+	for(i=0; i<2; i++)
+		for(j=0; j<FFT_SIZE; j++)
+			m_pilots_shifted[i][j] = zero; 
+
+	for(i=0; i<2; i++)
+	{
+		for(j=0; j<NUM_PILOTS; j++)
+		{
+			m_pilots_shifted[i][pilots_pos[i][j]] = Complex<float>(1,0); 
+		}
+	}
+	m_pWimaxDecoders = new Decoder( FFT_SIZE );
 }
 
 int tWiMax_Dem::GetSamples( Complex<int16_t> *psamples, /*	complex samples in the interleaved order
-													real sample is first */
-							int n,             /*	number of complex samples */
+															real sample is first */
+							int n,						/*	number of complex samples */
 							tWiMax_Status *pstatus)
 {
+	
+	static int samples_count = -n;
 	static int test_cnt = 1; 
 	int i; 
 
 
+	pstatus->pDecRes = NULL; 
+
 	assert(n*2 < INBUF_SIZE); 
-	assert(n==FFT_SIZE); 
+	assert(n==(FFT_SIZE+GI_LENGTH)); 
 
 	Complex<int16_t> *pdst = m_input_buf; 
 	Complex<int16_t> *psrc = m_input_buf +  n; 
@@ -118,26 +138,128 @@ int tWiMax_Dem::GetSamples( Complex<int16_t> *psamples, /*	complex samples in th
 				Complex<int16_t> *p = m_input_buf+INBUF_OFFSET+i; 
 				//Counter input samples is taken into account
 				// delay the input buffer is needed only for the interaction of Matlab
-				static int samples_count = -1024;
+				
 				int offset = find_preamble(p, 341); 				
 				if( offset >= 0)
 				{
 					// print sample number which starts the preamble
+#if 0
+					// for input block size = 1024
 					printf("Preamble detected: %d\n", samples_count+offset -FIND_PREAMBLE_DELAY*2- (GI_LENGTH/2)); 
-				}
+#else
+					// for input block size = 1024+128
+					printf("Preamble detected: %d\n", 256 + samples_count+offset -FIND_PREAMBLE_DELAY*2- (GI_LENGTH/2)); 
+#endif
+					m_pFrame = p + offset -FIND_PREAMBLE_DELAY*2- (GI_LENGTH/2) - 1; 
+					
+					ProcessPreamble(); 
+					m_state=/*WIMAX_DEM_IDLE;*/WIMAX_DEM_WORK;
+					m_frames_counter =0;
+				} //if( offset >= 0)
 				samples_count+=341; 
 				i += 341;
 			}
 			m_num_remaining_samples = n-i; 
 			
 		break; 
+		
+		case WIMAX_DEM_WORK:
+			samples_count += n; 
+			
+			ProcessFrame(); 
+			pstatus->procRes = m_pWimaxDecoders->procSym( m_frame_fd, m_chest.m_current_H );
+			m_frames_counter++;
 
-		case WIMAX_DEM_PREAMBLE:
-			m_state = WIMAX_DEM_IDLE;
+			if(m_frames_counter==4)
+			{
+				pstatus->pDecRes = m_pWimaxDecoders->getDecRes();
+				m_state = WIMAX_DEM_IDLE;
+			}
 		break; 
 	}
 	
 	return 0; 
+}
+
+void tWiMax_Dem::ProcessFrame()
+{
+	//static FILE *fp_test = NULL; 
+	//if(fp_test==NULL)
+	//{
+	//	fp_test = fopen("test.bin", "wb"); 
+	//}
+
+	// Correct carrier offset (in time domain)
+	m_carrier_phase += m_cfo*(FFT_SIZE+GI_LENGTH); 
+	mpy_by_cexp( m_pFrame, FFT_SIZE, m_tmp_frame, -m_carrier_phase, -m_cfo); 
+
+	FFT_fwd(&m_fft_state, m_tmp_frame, m_frame_fd);  
+	fftshift(m_frame_fd, FFT_SIZE); 	
+
+	// Correct timing offset (in frequency domain)
+	mpy_by_cexp(m_frame_fd, FFT_SIZE, m_frame_fd, 2*M_PI/1024*(GI_LENGTH/2), 2*M_PI/1024*(GI_LENGTH/2));  
+	mpy_by_cexp(m_frame_fd, FFT_SIZE, m_frame_fd, -m_phase_trend, -m_phase_trend); 
+
+	// Generate sequence of the pilots for current frame
+	memset(m_current_pilots, 0, sizeof(m_current_pilots)); 
+	m_pWimaxDecoders->phyDerand2(&m_pilots_shifted[m_frames_counter&1][SC_FIRST], 
+														&m_current_pilots[SC_FIRST], 
+														m_frames_counter&1, 
+														m_frames_counter>>1); 
+		
+	// Update a estimation of the CR
+	float dcfo = m_chest.Update(m_frame_fd, m_current_pilots) ; 
+
+	//fwrite(m_frame_fd, sizeof(m_frame_fd[0]), 1024, fp_test); 
+	//fwrite(m_chest.m_current_H, sizeof(m_frame_fd[0]), 1024, fp_test); 
+	//fflush(fp_test); 
+
+	
+	// Ajust value of CFO
+	m_cfo += 0.7f*dcfo/(FFT_SIZE+GI_LENGTH); 
+}
+
+void tWiMax_Dem::ProcessPreamble()
+{
+	FFT_fwd(&m_fft_state, m_pFrame, m_frame_fd);  
+	fftshift(m_frame_fd, FFT_SIZE); 	
+	mpy_by_cexp(m_frame_fd, FFT_SIZE, m_tmp_frame, 2*M_PI/1024*(GI_LENGTH/2), 2*M_PI/1024*(GI_LENGTH/2));  
+
+	int int_CFO; 
+	int preamble_index = detect_preamble_fd(m_tmp_frame, 2, &int_CFO); 
+	int segment = preamble_index/32; 
+	// Estimate fractional part of the CFO 
+	float CFO_frac = m_cfo_estimator.Estimate(m_frame_fd, segment+int_CFO); 
+	// Add integer part of the CFO   
+	m_cfo = CFO_frac+2*int_CFO*M_PI/1024; 
+
+	// Compensate the CFO for preamble in the time domain
+	mpy_by_cexp( m_pFrame, FFT_SIZE, m_tmp_frame, 0, -m_cfo);  
+	FFT_fwd(&m_fft_state, m_tmp_frame, m_frame_fd);  
+	mpy_by_cexp(m_frame_fd, FFT_SIZE, m_frame_fd, 2*M_PI/1024*(GI_LENGTH/2), 2*M_PI/1024*(GI_LENGTH/2));
+
+	fftshift(m_frame_fd, FFT_SIZE); 	
+	m_carrier_phase = 0; 
+	// precise timing correction
+	m_phase_trend = find_phase_trend(m_frame_fd, preamble_index); 
+	mpy_by_cexp(m_frame_fd, FFT_SIZE, m_frame_fd, -m_phase_trend, -m_phase_trend); 
+
+	m_pWimaxDecoders->startNewFrm( preamble_index );
+	m_chest.Start(m_frame_fd, preamble_index);
+}
+
+// The general idea is to make the phase of the OFDM  symbol more  smooth.
+float tWiMax_Dem::find_phase_trend(Complex<float> *pframe, int preamble_idx)
+{
+	const float *pref = preambles_freq_shifted[preamble_idx]; 
+	Complex <float> acc(0); 
+	int i; 
+	for(i = 3; i<FFT_SIZE; i++)
+	{
+		Complex <float> t = pref[i-3] * pframe[i-3]; 
+		acc += ( pref[i] * pframe[i]) * t.conj(); 
+	}
+	return acc.arg()/3; 
 }
 
 /*
@@ -310,4 +432,49 @@ tWiMax_Dem::~tWiMax_Dem()
 	delete m_pcic_En; 
 	delete m_pcic_R; 
 	delete m_pcic_Tone_r; 
+	FFT_Free( &m_fft_state ); 
+	delete m_pWimaxDecoders;
+}
+/*
+	return preamble index 
+*/
+int tWiMax_Dem::detect_preamble_fd( Complex<float> *sig_in_freq_shifted, 
+							int max_offset,		/* max integer CFO */ 
+							int *est_offset)	/* finded integer CFO */ 
+{
+	int n, j, m, s; 
+	float max_sum_abs = -1;
+	int  preamble_index; 
+	for(n=-max_offset; n<=max_offset; n++)//for n = -max_offset:max_offset
+	{
+		for(j = 0; j <NUM_PREAMBLES; j++)//num_preambles
+		{
+			//tmp  = fftshift(preamble_freq(j, :)); 
+			const float *p = preambles_freq_shifted[j] + 32; 
+			float sum_abs = 0; 
+			Complex <float> *pin = sig_in_freq_shifted + 32 + n ; 
+			
+			for( m=0; m < (1024-64)/32; m++)
+			{
+				Complex <float> sum(0,0); 
+				for( s=0; s<32; s++)
+				{
+					sum += (*p++) * (*pin++); 
+				}
+				sum_abs += sum.abs(); 
+			}
+
+			if(sum_abs > max_sum_abs)
+			{
+				max_sum_abs = sum_abs;
+				preamble_index = j; 
+				*est_offset = n; 
+			}
+		}
+	}	
+/*
+	if(m_pWimaxDecoders != NULL)
+		delete 	m_pWimaxDecoders; 
+*/
+	return preamble_index; 
 }

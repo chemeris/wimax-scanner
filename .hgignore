@@ -1,0 +1,11 @@
+syntax: glob
+Debug
+Release
+build
+signals
+*.suo
+*.ncb
+*.dat
+*.user
+*.pdb
+*.exe
