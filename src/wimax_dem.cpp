@@ -33,8 +33,12 @@ void tWiMax_Dem::SetDefaultParams(tWiMax_Params *p)
 	p->PD_delay_samples = 341;
 }
 	
-tWiMax_Dem::tWiMax_Dem(tWiMax_Params *params)
+tWiMax_Dem::tWiMax_Dem(	VerbMode 		verbMode,		//!< verbosity mode
+						unsigned long 	wsharkIp,		//!< wireshark IP address
+						tWiMax_Params *	params		)
 {	
+	this->verbMode = verbMode;
+
 	int i; 
 	if ( params!=NULL )
 	{
@@ -93,8 +97,9 @@ tWiMax_Dem::tWiMax_Dem(tWiMax_Params *params)
 			m_pilots_shifted[i][pilots_pos[i][j]] = Complex<float>(1,0); 
 		}
 	}
-	m_pWimaxDecoders = new Decoder( FFT_SIZE );
+	m_pWimaxDecoders = new Decoder( FFT_SIZE, wsharkIp );
 }
+
 
 int tWiMax_Dem::GetSamples( Complex<int16_t> *psamples, /*	complex samples in the interleaved order
 															real sample is first */
@@ -143,13 +148,15 @@ int tWiMax_Dem::GetSamples( Complex<int16_t> *psamples, /*	complex samples in th
 				if( offset >= 0)
 				{
 					// print sample number which starts the preamble
+					if( verbMode > VERB_SILENT ) {
 #if 0
-					// for input block size = 1024
-					printf("Preamble detected: %d\n", samples_count+offset -FIND_PREAMBLE_DELAY*2- (GI_LENGTH/2)); 
+						// for input block size = 1024
+						printf("Preamble detected: %d\n", samples_count+offset -FIND_PREAMBLE_DELAY*2- (GI_LENGTH/2)); 
 #else
-					// for input block size = 1024+128
-					printf("Preamble detected: %d\n", 256 + samples_count+offset -FIND_PREAMBLE_DELAY*2- (GI_LENGTH/2)); 
+						// for input block size = 1024+128
+						printf("Preamble detected: %d\n", 256 + samples_count+offset -FIND_PREAMBLE_DELAY*2- (GI_LENGTH/2)); 
 #endif
+					}
 					m_pFrame = p + offset -FIND_PREAMBLE_DELAY*2- (GI_LENGTH/2) - 1; 
 					
 					ProcessPreamble(); 

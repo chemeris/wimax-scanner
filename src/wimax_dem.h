@@ -69,7 +69,10 @@ struct tWiMax_Status
 class tWiMax_Dem
 {
 	public:		
-		tWiMax_Dem(tWiMax_Params *params = NULL); 
+		tWiMax_Dem(	VerbMode 		verbMode,		//!< verbosity mode
+					unsigned long 	wsharkIp,		//!< wireshark IP address
+					tWiMax_Params *	params = NULL	); 
+
 		int GetSamples( Complex<int16_t> *psamples, /*complex samples in the interleaved order
 										     real sample is first */
 						int n,             /* number of input complex samples */
@@ -81,6 +84,9 @@ class tWiMax_Dem
 	void SetDefaultParams(tWiMax_Params *p); 
 
 	protected:
+
+	VerbMode 		verbMode;		//!< verbosity mode
+
 // The CIC filter for autocorrelator output, 
 // length of the this filter is equal length guard interval
 	tCIC_flt <Complex <float> > *m_pcic_R; 

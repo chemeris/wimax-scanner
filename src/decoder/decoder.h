@@ -76,7 +76,8 @@ Static constant external variables and external types
 External functions
 ******************************************************************************/
 
-	Decoder(	int		fftSz	);	//!< FFT size
+	Decoder(	int				fftSz,			//!< FFT size
+				unsigned long 	wsharkIp	);	//!< wireshark IP address
 
 	~Decoder();
 

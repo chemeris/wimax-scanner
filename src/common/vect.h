@@ -1,7 +1,7 @@
 /****************************************************************************/
 /*! \file		vect.h
 	\brief		Vector operations
-	\author		Iliya Voronov, http://powerdsp.narod.ru
+	\author		Iliya Voronov, iliya.voronov@gmail.com
 	\version	1.0
      
 	Vector operations for floating point math.

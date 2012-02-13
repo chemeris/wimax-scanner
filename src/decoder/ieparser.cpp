@@ -56,9 +56,9 @@ External static constants
 External functions
 ******************************************************************************/
 
-IeParser::IeParser()
+IeParser::IeParser(		unsigned long 		wsharkIp	)
 {
-	openSock();
+	openSock( wsharkIp );
 }
 
 
@@ -347,7 +347,7 @@ void			IeParser::parseExt3Ie(		Diuc				diuc,
 	}
 }
 
-void			IeParser::openSock()
+void			IeParser::openSock(		unsigned long 		wsharkIp	)
 {
 #ifdef WIN32
 	WORD wVersionRequested = MAKEWORD(2, 2);
@@ -368,11 +368,7 @@ void			IeParser::openSock()
 
 	memset(&wsharkAddr, 0, sizeof(wsharkAddr));
 	wsharkAddr.sin_family = AF_INET;
-#ifdef WIN32
-	wsharkAddr.sin_addr.s_addr = inet_addr( "192.168.1.1" ); // it must be present
-#else
-	wsharkAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-#endif
+	wsharkAddr.sin_addr.s_addr = wsharkIp;
 	wsharkAddr.sin_port = htons( GSMTAP_UDP_PORT );
 
 	frmCntr = 0;

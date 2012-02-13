@@ -20,6 +20,7 @@ set ( HEADERS
 	../../src/dsp_utils.h
 	../../src/wimax_consts.h
 	../../src/wimax_dem.h
+	../../src/getopt_msvc.h	
 	../../src/cml/convolutional.h
 	../../src/common/baseop.h
 	../../src/common/comdefs.h

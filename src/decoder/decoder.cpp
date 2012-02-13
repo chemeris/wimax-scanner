@@ -51,10 +51,11 @@ Static constant external variables and external types
 External functions
 ******************************************************************************/
 
-Decoder::Decoder(	int		fftSz	)
+Decoder::Decoder(	int				fftSz,
+					unsigned long 	wsharkIp	)
 :	carAlloc( fftSz ),
 	burstDec(),
-	ieParser()
+	ieParser( wsharkIp )
 {
 }
 

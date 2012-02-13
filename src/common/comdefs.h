@@ -58,12 +58,11 @@
 Project config
 *****************************************************************************/
 
-//! Verbosity Silent - only fatal error
-#define VERB_SILENT 0
-//! Verbosity Brief - fatal error and important message
-#define VERB_BRIEF 1
-//! Verbosity Full - full information
-#define VERB_FULL 2
+typedef enum VerbMode {
+	VERB_SILENT,	//! Verbosity Silent - only fatal error
+	VERB_BRIEF,		//! Verbosity Brief - fatal error and important message
+	VERB_FULL		//! Verbosity Full - full information
+} VerbMode;
 
 //! Verbosity mode
 #define VERB_MODE VERB_BRIEF

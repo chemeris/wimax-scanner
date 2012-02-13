@@ -61,7 +61,7 @@ External types and static constants
 External functions
 ******************************************************************************/
 
-	IeParser();
+	IeParser(	unsigned long 	wsharkIp	);		//!< Wirwshark IP address
 
 
 	~IeParser();
@@ -91,6 +91,8 @@ Internal types and static constants
 /*****************************************************************************
 Internal variables
 *****************************************************************************/
+
+	unsigned long 	wsharkIp;			//!< wireshark IP address
 
 	bool			isIncCid;			//!< is include CID, toggled by CID-SWITCH_IE
 
@@ -134,7 +136,7 @@ Internal functions
 	
 
 	//! Open wireshark socket for burst capture
-	void			openSock();
+	void			openSock(		unsigned long 		wsharkIp	);
 
 	//! Close wireshark socket 
 	void			closeSock();

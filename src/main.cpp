@@ -10,6 +10,27 @@
 #define INPUT_BLOCK_SIZE (2048)			/* sizeof block (number of "short"*/
 #endif
 
+#ifdef WIN32
+#include "getopt_msvc.h"
+#include <winsock.h>
+#define	DEFAULT_IP_ADDT "192.168.1.1"
+#else
+#include <unistd.h>
+#include <arpa/inet.h>
+#define	DEFAULT_IP_ADDT "127.0.0.1"
+#endif
+
+
+
+//! Command arguments values
+struct ArgVal {
+	VerbMode 		verbMode;		//!< verbosity mode
+	unsigned long 	wsharkIp;		//!< wireshark IP address
+	FILE *			pInFile;		//!< input file
+};
+
+
+
 /***** Print result funsions *****/
 
 static const char *		getVerbProcRes( Decoder::ProcRes			procRes	)
@@ -132,39 +153,88 @@ void		printRes(		Decoder::ProcRes		procRes,
 		printDlmap( &pDecRes->dlmapMsg );
 }
 
-int main(int argn, char *argv[] )
+
+//! Parse command arguments and open input file, return NULL if error
+static const ArgVal *		parseArg(	int argc,				//!< standard main argument
+										char *argv[]	);		//!< standard main argument
+
+
+
+int main( int argc, char *argv[] )
 {
-
 //	fprintf(stderr, "\nbuild time = %s \n", __TIME__);
-	tWiMax_Dem dem; 
 
-	if( argn == 1 )
-	{
-		fprintf(stderr, "\nERROR: Input file name must be specified %s", argv[1]);
+	const ArgVal *	pArg;
+
+	pArg = parseArg( argc, argv );
+	if( pArg == NULL ) {
+		printf( 
+			"This command run Wimax decoder\n"
+			"wimax [-vN] [-iXXX.XXX.XXX.XXX] infile.ext\n"
+			"    -vN - verbosity mode: 0 - silent, 1 - brief, 2 - full; default - brief\n"
+			"    -iXXX.XXX.XXX.XXX - Wiresharc IPv4 addres; default - " DEFAULT_IP_ADDT "\n"
+			"    infile.ext - input complex sample file\n"
+			);
 		exit( EXIT_FAILURE );
-	}
+	} 
 
-	FILE *fp_in = fopen(argv[1], "rb"); 
-
-	if(fp_in==NULL)
-	{
-		fprintf(stderr, "\nERROR: Can't open input file %s", argv[1]); 
-		exit( EXIT_FAILURE );
-	}
+	tWiMax_Dem		dem( pArg->verbMode, pArg->wsharkIp ); 
+	tWiMax_Status	status; 
 
 	int16_t in_data[INPUT_BLOCK_SIZE]; 
 	int j=0, i=0, k = 0; 
-	tWiMax_Status status; 
-	while(fread(in_data, sizeof(in_data[0]), INPUT_BLOCK_SIZE, fp_in)==INPUT_BLOCK_SIZE)//for (j=0; j<25; j++)
+	while( fread(in_data, sizeof(in_data[0]), INPUT_BLOCK_SIZE, pArg->pInFile )==INPUT_BLOCK_SIZE)//for (j=0; j<25; j++)
 	{
 //		int16_t *pin = in_data; 
-		dem.GetSamples((Complex <int16_t> *)in_data, INPUT_BLOCK_SIZE/2, &status); 
-//		if(status.pDecRes!=NULL)
-//		{
-//			printRes( status.procRes, status.pDecRes, 4 );
-//		}
+		dem.GetSamples((Complex <int16_t> *)in_data, INPUT_BLOCK_SIZE/2, &status);
+		if( ( pArg->verbMode == VERB_FULL ) && ( status.pDecRes != NULL ) )	{
+			printRes( status.procRes, status.pDecRes, 4 );
+		}
 	}
 
-	fclose(fp_in); 
+	fclose( pArg->pInFile );
 	return 0;
+}
+
+
+
+const ArgVal *		parseArg(	int argc,
+								char *argv[]	)
+{
+	static ArgVal	argVal;
+	int				t;
+	const char *	pIpTxt = DEFAULT_IP_ADDT;
+	char			c;
+	argVal.verbMode = VERB_BRIEF;
+
+	opterr = 0;
+	while ( (c = getopt (argc, argv, "v:i:")) != -1 )
+		switch (c) {
+			case 'v':
+				t = atoi( optarg );
+				if( ( t < VERB_SILENT ) || ( t > VERB_FULL ) )
+					return NULL;
+				argVal.verbMode = (VerbMode)t;
+				break;
+			case 'i':
+				pIpTxt = optarg;
+				break;
+			case '?':
+			default:
+				return NULL;
+		}
+	argVal.wsharkIp = inet_addr( pIpTxt );
+	if( argVal.wsharkIp == INADDR_NONE )
+		return NULL;
+
+	if( optind != argc-1 )
+		return NULL;
+	argVal.pInFile = fopen( argv[optind], "rb" );
+	if( argVal.pInFile == NULL ) {
+		fprintf(stderr, "!!! Can't open input file %s", argv[optind] ); 
+		return NULL;
+	}
+	printf( "Decode samples from file %s, verbosity %d, Wirwshark IP %s\n",
+		argv[optind], argVal.verbMode, pIpTxt );
+	return &argVal;
 }
